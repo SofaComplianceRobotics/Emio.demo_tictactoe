@@ -18,13 +18,13 @@ To launch the demo, you can either use the provided .bat file (on Windows) or yo
 1. Environment path:
     
     ```bash
-    # On Ubuntu 
+    # On Ubuntu
     export SOFA_ROOT=PATH_TO_SOFA_ROBOTICS_DIR
-    export PATH=$PATH:$SOFA_ROOT\bin
-    export PYTHONHOME=$SOFA_ROOT\bin\python
-    export PYTHONPATH=$SOFA_ROOT\bin\python\lib\python3.10\site-packages
-    export PYTHONPATH=$PYTHONPATH:$SOFA_ROOT\plugins\SofaPython3\lib\python3\site-packages
-    export PYTHONPATH=$PYTHONPATH:PATH_TO_DarkHelp\src-python
+    export PATH=$PATH:$SOFA_ROOT/bin
+    export PYTHONHOME=$SOFA_ROOT/bin/python
+    export PYTHONPATH=$SOFA_ROOT/bin/python/lib/python3.10/site-packages
+    export PYTHONPATH=$PYTHONPATH:$SOFA_ROOT/plugins/SofaPython3/lib/python3/site-packages
+    export PYTHONPATH=$PYTHONPATH:PATH_TO_DarkHelp/src-python
     ```
     
     ```bash
