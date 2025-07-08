@@ -53,7 +53,7 @@ To launch the demo, you can either use the provided .bat file (on Windows) or yo
     export PATH=$PATH:$SOFA_ROOT\bin
     export PYTHONPATH=$PYTHONPATH:PATH_TO_DarkHelp\src-python
     ```
-    
-2. `cd ~/emio-labs/assets/labs/tictactoe`
-3. `python tictactoe_yolov4.py` 
-4. `runSofa -l Sofapython3,SofaImGui -g imgui Movement\move_to_position.py`
+2. In DarkHelp.py line 86 : Predict.argtypes = [c_void_p, c_int, c_int, POINTER(c_uint8), c_int] 
+3. `cd ~/emio-labs/assets/labs/tictactoe`
+4. `python tictactoe_yolov4.py` 
+5. `runSofa -l Sofapython3,SofaImGui -g imgui Movement\move_to_position.py`
