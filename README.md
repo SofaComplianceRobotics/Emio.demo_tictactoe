@@ -1,4 +1,4 @@
-# Emio.TicTacToe
+# Emio.demo_tictactoe
 Play tic tac toe with Emio.
 
 # Requirements
