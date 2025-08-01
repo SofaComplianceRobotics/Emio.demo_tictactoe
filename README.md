@@ -57,6 +57,4 @@ To launch the demo, you can either use the provided .bat file (on Windows) or yo
     ```
 2. In `DarkHelp.py` line 86 : `Predict.argtypes = [c_void_p, c_int, c_int, POINTER(c_uint8), c_int]` 
 3. `cd ~/emio-labs/assets/labs/demo_tictactoe`
-4. `runSofa -l Sofapython3,SofaImGui -g imgui 1-emio.py`
-5. `python 2-play.py` 
-
+4. `python play.py` 
