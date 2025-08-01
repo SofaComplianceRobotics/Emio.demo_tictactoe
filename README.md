@@ -1,7 +1,8 @@
 # Emio.demo_tictactoe
 
-![](tictactoe.png)
-Play tic tac toe with Emio.
+<img src="tictactoe.png" width="50%"/>
+<figcaption>Play tic tac toe with Emio.</figcaption>
+
 
 # Requirements
 
