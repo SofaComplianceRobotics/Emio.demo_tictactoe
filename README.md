@@ -1,5 +1,6 @@
 # Emio.demo_tictactoe
 
+![](tictactoe.png)
 Play tic tac toe with Emio.
 
 # Requirements
