@@ -17,13 +17,6 @@ from module.loggerconfig import getLogger
 logger = getLogger()
 
 
-class Players(Enum):
-    """
-    Enum to define the players
-    """
-    HUMAN = 1
-    COMPUTER = 2
-
 class Strategies(Enum):
     """
     Enum to define the strategies of the computer player
@@ -113,7 +106,7 @@ class TicTacToe () :
         return position
     
 
-    def randomStrategy(self, id_ordi=Players.COMPUTER):
+    def randomStrategy(self):
         """
         Random strategy
 
@@ -132,7 +125,7 @@ class TicTacToe () :
                 return self.__emioPlays(i, j)
 
 
-    def easyStrategy(self, id_ordi=Players.COMPUTER):
+    def easyStrategy(self):
         """
         Strategy that lead to a draw, look only for the next move and could be counter
 
@@ -172,7 +165,7 @@ class TicTacToe () :
             return self.__emioPlays(i, j)
 
 
-    def optimalStrategy(self, id_ordi=Players.COMPUTER, rand=False):
+    def optimalStrategy(self, rand=False):
         """
         Optimal strategy, either win or make a draw
 
@@ -410,7 +403,6 @@ class TicTacToe () :
 
         Return:
         position        : numpy.ndarray. The real world coordinates of the cube
-        cls             : int. The class of the cube
         """
         cls = self.dhresults.cls
         xywh = self.dhresults.xywh 
@@ -422,10 +414,10 @@ class TicTacToe () :
                 depth = self.getMedianDepth(self.dhresult, i, depth_image)
                 position = self.camera.image_to_simulation(int(xywh[i][0]), int(xywh[i][1]), depth)
 
-                if not self.board.isInStorageZone(position[0], position[2]):
-                    return position, int(cls[i])
+                if self.board.isInPlayZone(position[0], position[2]):
+                    return position
                 
-        return None, None
+        return None
             
 
     def updateStorageState(self, depth_image):
@@ -483,13 +475,9 @@ class TicTacToe () :
         return True
     
    
-    def makeEmioChooseColor(self, depth_image):
+    def makeEmioChooseColor(self):
         """
         Choose the first detected object to play with, either a dog or a cat
-
-        Parameters:
-        -----------
-        depth_image     : numpy.ndarray. The depth image returned by the camera
         
         Return:
         -----------
@@ -555,17 +543,17 @@ class TicTacToe () :
 
 
     def sendGripperPosition(self, x, y, z, speed=300, minSteps=40, withPI=False):
-        move = self.simulation.MoveEmio
-        move.setGripperTarget([x, y, z], speed=speed, minSteps=minSteps, withPI=withPI)
-        while not move.done:
+        moveEmio = self.simulation.MoveEmio
+        moveEmio.setGripperTarget([x, y, z], speed=speed, minSteps=minSteps, withPI=withPI)
+        while not moveEmio.done:
             self.simulationStep()
         return 
             
 
     def sendGripperOpening(self, distance, speed=300, minSteps=40):
-        move = self.simulation.MoveEmio
-        move.setGripperDistance(distance, speed=speed, minSteps=minSteps)
-        while not move.done:
+        moveEmio = self.simulation.MoveEmio
+        moveEmio.setGripperDistance(distance, speed=speed, minSteps=minSteps)
+        while not moveEmio.done:
             self.simulationStep()
         return 
 
@@ -623,86 +611,41 @@ class TicTacToe () :
         self.moveEmioToRestPosition()
     
 
-    def correctRealBoard(self, depth_image):
+    def checkBoard(self):
         """
-        Correct the real board state to the computer boarstate one move at a time
-        Ensure that Emio did not move any other cube and successfully made its move
-
-
-        Parameters:
-        -----------
-        depth_image     : numpy.ndarray. The depth image returned by the camera
-
-        Return:
-        -----------
-        cubePosition   : numpy.ndarray. The position of the next cube to move
-        empty_cell     : list[float]. The position of the box the cube will be placed on
+        Check that the real board matches
         """
-        cls = self.dhresults.cls
-        xywh = self.dhresults.xywh
+        return
 
-        empty_cell = None
-        cat_cube = None
-        dog_cube = None
-        boardstate = None
 
-        length = 0
+    def clearBoard(self):
+        """
+        Make Emio clear the board
+        """
+        _, depthImage = self.dhresults.getProcessedImages()
 
-        # If a hand is detected, return None
-        if self.dhresults.isHandDetected():
-            return None, None
-
-        for i in range(len(cls)):
-
-            depth = self.getMedianDepth(i, depth_image)
-            position = self.camera.image_to_simulation(xywh[i][0], xywh[i][1], depth)
-           
-            if self.board.isInPlayZone(position[0], position[2]):
-                length += 1
-                x, y = self.board.positionToCell(position[0], position[2])
-
-                # Look if the board is as it should be, save the difference in the form
-                # of 1 cube of each color and one empty space that are not supposed to be their
-                if self.board.state[x][y] != CellState.EMPTY.value and int(cls[i]) == Classes.EMPTY.value and empty_cell is None:
-                    empty_cell = self.board.cellToPosition(x, y)
-                    boardstate = self.board.state[x][y]
-
-                elif self.board.state[x][y] != CellState.DOG.value and int(cls[i]) == Classes.DOG.value and dog_cube is None:
-                    depth = self.getMedianDepth(i, depth_image)
-                    dog_cube = self.camera.image_to_simulation(xywh[i][0], xywh[i][1], depth)
-
-                elif self.board.state[x][y] != CellState.CAT.value and int(cls[i]) == Classes.CAT.value and cat_cube is None:
-                    depth = self.getMedianDepth(i, depth_image)
-                    cat_cube = self.camera.image_to_simulation(xywh[i][0], xywh[i][1], depth)
-
-        if length < 9:
-            return None, None
+        while not self.isPlayZoneClear(depthImage): # If the playzone is not empty
+            _, depthImage = self.dhresults.updateAndDisplayAnnotatedImage()
+            self.updateStorageState(depthImage) # Update the storage state to know where to put the cube to store
             
-        if boardstate == CellState.DOG.value:
-            # If the empty space is was meant to be a yellow cube return the position of the position of the space and the yellow cube that is misplaced
-            if dog_cube is None:
-                # If no cube misplaced on the play zone take one from the storage zone
-                index = self.chooseCubeToPlay(0, depth_image)
-                depth = self.getMedianDepth(index, depth_image)
-                dog_cube = self.camera.image_to_simulation(xywh[index][0], xywh[index][1], depth)
-            return dog_cube, empty_cell
+            cubePosition = self.board.cellToPosition(self.board.positionToCell(self.selectCubeToStore(depthImage))) # Chose the next cube to store and return its position
+            distance_min = np.finfo(np.float32).max
+            closestCellPosition = None
+            while self.board.getNextEmptyStorage() is not None:
+                cellPosition = self.board.storageToPosition(self.board.getNextEmptyStorage()) # Chose a position of an empty box in the storage zone of the good class
+                distance = np.linalg.norm(np.array(cellPosition) - np.array(cubePosition))
+                if distance < distance_min:
+                    closestCellPosition = cellPosition
+                    distance_min = distance
+
+            if closestCellPosition is None or cubePosition is None:
+                logger.error("No empty storage left to clear the board.")
+                return
+            else:
+                self.sequenceMove(cubePosition, cellPosition)
+                self.takePhotoForDatabase()
         
-        if boardstate == CellState.CAT.value:
-            # If the empty space was meant to be a blue cube return the position of the position of the space and the blue cube that is misplaced
-            if cat_cube is None:
-                # If no cube misplaced on the play zone take one from the storage zone
-                index = self.chooseCubeToPlay(1, depth_image)
-                depth = self.getMedianDepth(index, depth_image)
-                cat_cube = self.camera.image_to_simulation(xywh[index][0], xywh[index][1], depth)
-            return cat_cube, empty_cell
-        
-        self.updateStorageState(depth_image)
-        if dog_cube is not None:
-            empty_cell = self.board.storageToPosition(0, self.board.getNextEmptyStorage(0))
-            return dog_cube, empty_cell
-        else:
-            empty_cell = self.board.storageToPosition(1, self.board.getNextEmptyStorage(1))
-            return cat_cube, empty_cell
+            depthImage = self.dhresults.updateAndDisplayAnnotatedImage()
 
 
     def winEmote(self):

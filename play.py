@@ -6,7 +6,7 @@ import os
 
 import DarkHelp
 
-from module.tictactoe import TicTacToe, Players, Strategies
+from module.tictactoe import TicTacToe, Strategies
 from module.dhresults import DHResults, Classes
 from module.loggerconfig import getLogger, logging
 logger = getLogger()
@@ -96,30 +96,6 @@ def startNewGameStep():
     return play
 
 
-def clearBoardStep(tictactoe: TicTacToe, dhresults: DHResults):
-    """
-    Make Emio clear the board
-    """
-    colorImage, depthImage = dhresults.getProcessedImages()
-
-    while not tictactoe.isPlayZoneClear(depthImage): # If the playzone is not empty
-        colorImage, depthImage = dhresults.updateAndDisplayAnnotatedImage()
-        tictactoe.updateStorageState(depthImage) # Update the storage state to know where to put the cube to store
-        
-        cubePosition, color = tictactoe.selectCubeToStore(depthImage) # Chose the next cube to store and return its position
-        cellPosition = None
-        if color is not None:
-            cellPosition = tictactoe.board.storageToPosition(tictactoe.board.getNextEmptyStorage()) # Chose a position of an empty box in the storage zone of the good class
-        
-        if cellPosition is None:
-            pass
-        else:
-            tictactoe.sequenceMove(cubePosition, cellPosition)
-            tictactoe.takePhotoForDatabase()
-       
-        colorImage, depthImage = dhresults.updateAndDisplayAnnotatedImage()
-
-
 def firstRound(tictactoe: TicTacToe, dhresults: DHResults):
     """
     First round of the TicTacToe game (at the end of this round, Emio must has played, next player should be the human)
@@ -137,8 +113,8 @@ def firstRound(tictactoe: TicTacToe, dhresults: DHResults):
     tictactoe.takePhotoForDatabase()
 
     if tictactoe.humanColor is None: # If the human did not play first, Emio will take the first detected color
-        while not tictactoe.makeEmioChooseColor(depthImage):
-            _, depthImage = dhresults.updateAndDisplayAnnotatedImage()
+        while not tictactoe.makeEmioChooseColor():
+            dhresults.updateAndDisplayAnnotatedImage()
     else:
         tictactoe.displayBoard()
 
@@ -147,23 +123,10 @@ def firstRound(tictactoe: TicTacToe, dhresults: DHResults):
     return 
 
 
-def gameLoop():
+def gameLoop(tictactoe: TicTacToe, dhresults: DHResults):
     """
     Game loop of the TicTacToe game
     """
-
-    dhresults = DHResults()
-    tictactoe = TicTacToe(boardState=[
-                                        [0, 0, 0],
-                                        [0, 0, 0],
-                                        [0, 0, 0] ],
-                          dhresults=dhresults)
-   
-    # User choices
-    # calibrationStep(tictactoe)
-    # enrichDatabaseStep(tictactoe)
-    # difficultyStep(tictactoe)
-    tictactoe.chosenStrategy = tictactoe.strategies.get("i")
 
     while startNewGameStep():
 
@@ -198,24 +161,37 @@ def gameLoop():
 
             tictactoe.makeEmioPlay() # Emio plays
             tictactoe.displayBoard()
+            tictactoe.checkBoard()
 
         tictactoe.displayResults()
         tictactoe.moveEmioToRestPosition()
 
         input("Press any key to make Emio clear the board.")
-        clearBoardStep(tictactoe)
+        tictactoe.clearBoard()
     
-    # Cleanup
-    DarkHelp.DestroyDarkHelpNN(dhresults.dh)
-
 
 def main():
     """
     Main function to run the TicTacToe game 
     """
+
+    dhresults = DHResults()
+    tictactoe = TicTacToe(boardState=[[0, 0, 0],
+                                      [0, 0, 0],
+                                      [0, 0, 0] ],
+                          dhresults=dhresults)
+   
+    # User choices
+    # calibrationStep(tictactoe)
+    # enrichDatabaseStep(tictactoe)
+    difficultyStep(tictactoe)
+
     # Game loop
-    gameLoop()
+    gameLoop(tictactoe, dhresults)
         
+    # Cleanup
+    DarkHelp.DestroyDarkHelpNN(dhresults.dh)
+
 
 if __name__ == "__main__":
    main()

@@ -4,10 +4,10 @@ from parts.emio import Emio
 from utils.header import addHeader, addSolvers
 
 
+# The simulation of Emio which solves the IK problem
 def createScene(rootnode,
                 camera
                 ):
-    #create a Sofa scene
     
     from module.moveemio import MoveEmio
 
@@ -39,7 +39,7 @@ def createScene(rootnode,
     # Add effector
     emio.effector= emio.CenterPart.addChild("TipEffector")
     emio.effector.addObject("MechanicalObject", template="Rigid3", position=[0, 0, 0, 0, 0, 0, 1] * 2)
-    emio.effector.addObject("RigidMapping", rigidIndexPerPoint=[29, 39]) # Create a target that emio will follow between the gripper's extremities
+    emio.effector.addObject("RigidMapping", rigidIndexPerPoint=[29, 39]) # Create a target that Emio will follow between the gripper's extremities
    
     # Target
     effectorTarget = modelling.addChild('Target')
@@ -49,7 +49,7 @@ def createScene(rootnode,
                              position=[[0, -160, 0, 0, 0, 0, 1]],
                              showObject=True, showObjectScale=20)
 
-    # Add inverse components and GUI
+    # Add inverse components
     emio.addInverseComponentAndGUI(effectorTarget.getMechanicalState().position.linkpath, barycentric=True, withGUI=False)
 
     TCP = modelling.addChild("TCP")

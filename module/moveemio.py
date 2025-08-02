@@ -29,11 +29,13 @@ class MoveEmio(Sofa.Core.Controller):
         self.listDeltaPosition = []
         self.listDeltaGripper = []
 
-        self.steps = 0
-        self.done = True
         self.camera = camera
-        self.minMotionSteps = 80
 
+        self.done = True # Is the motion to target (command) done
+        self.minMotionSteps = 80 # Wait at least this number of steps before receiving another command
+        self.steps = 0 # Current number of steps done 
+
+        # PI controller
         self.PI = PIController(self.emio.getRoot().dt.value)
         self.withPI = False
         self.tipTarget = None
@@ -47,19 +49,33 @@ class MoveEmio(Sofa.Core.Controller):
 
 
     def setGripperTarget(self, target: list[float], speed, minSteps, withPI=False):
+        """
+        Emio receives the command to move its gripper to a target position
+        """
         self.done = False
         self.minMotionSteps = minSteps
-        self.steps = self.minMotionSteps
+        self.steps = minSteps
+
+        # Reset PI
         self.withPI = withPI
+        if withPI:
+            self.PI.prev_position = np.arrey(self.emio.CenterPart.TipEffector.EffectorCoord.barycenter.value[0:3])
+
+        # Set the target
         self.tipTarget = target
         self.emio.CenterPart.TipEffector.EffectorCoord.maxSpeed.value = speed
         self.target.getMechanicalState().position.value = [target + [0, 0, 0, 1]]
 
 
     def setGripperDistance(self, distance, speed, minSteps):
+        """
+        Emio receives the command to change its gripper opening distance
+        """
         self.done = False
         self.minMotionSteps = minSteps
-        self.steps = self.minMotionSteps
+        self.steps = minSteps
+
+        # Set the target
         self.emio.CenterPart.Effector.Distance.PositionEffector.maxSpeed.value = speed
         self.emio.CenterPart.Effector.Distance.DistanceMapping.restLengths.value = [distance] 
 
@@ -120,11 +136,10 @@ class MoveEmio(Sofa.Core.Controller):
             if (abs(np.mean(np.array(self.listDeltaPosition))) < 1 and 
                 abs(np.mean(np.array(self.listDeltaGripper))) < 1 and 
                 self.steps <= 0):
-                # 1. If the variation of delta is almost none 
-                # 2. If the gripper is at its desired state
-                # 3. Wait steps sequence
-
-                # Update the current data with the new message
+                # Stops / done if:
+                # 1. Emio is steady
+                # 2. The gripper motion is steady
+                # 3. The minimum number of steps has been reached
                 self.done = True
 
 

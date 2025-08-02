@@ -148,7 +148,7 @@ class Board:
 
         return (x, z)
 
-    def getNextEmptyStorage(self) -> tuple:
+    def getNextEmptyStorage(self) -> int:
         """
         Returns the next empty storage index.
         If no empty storage is found, returns None.
