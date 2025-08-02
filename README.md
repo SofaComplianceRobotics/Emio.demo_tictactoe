@@ -1,6 +1,6 @@
 # Emio.demo_tictactoe
 
-<img src="tictactoe.png" width="50%"/>
+<img src="data/images/tictactoe.png" width="50%"/>
 <figcaption>Play tic tac toe with Emio.</figcaption>
 
 
