@@ -49,8 +49,9 @@ class DHResults:
     Class that handle the DarkHelp prediction and put them in an easy to use format
     """
     def __init__(self):
-        self.xywh = []     # list of [x, y, w, h], 
+        self.xydwh = []     # list of [x, y, d, w, h], 
                            # x and y are the center of the bounding box, 
+                           # d is the median depth
                            # w is the width and h is the height of the bounding box
         self.conf = []     # list of confidence
         self.cls  = []     # list of classes (what we detect on the image), 
@@ -110,7 +111,7 @@ class DHResults:
         masked = cv.bitwise_and(color_image, color_image, mask=mask)
 
         return masked, depth_image
-    
+
 
     def updateAndDisplayAnnotatedImage(self, extra=True):
         color_image, depth_image = self.update()
@@ -147,7 +148,7 @@ class DHResults:
         cls_list = []
 
         while not self.checkConsistency(cls_list): 
-            self.xywh = []     
+            self.xydwh = []     
             self.conf = []       
             self.cls  = []  
 
@@ -175,11 +176,19 @@ class DHResults:
                 h=data['file'][0]['prediction'][i]['rect']['height']
                 x=x+w/2
                 y=y+h/2
-                self.xywh.append([x,y,w,h])
+
+                x1 = max(0, int(x - w / 2))
+                y1 = max(0, int(y - h / 2))
+                x2 = min(depth_image.shape[1], int(x + w / 2))
+                y2 = min(depth_image.shape[0], int(y + h / 2))
+                depth_values = depth_image[y1:y2, x1:x2].flatten()
+                d = np.median(depth_values[depth_values > 0])
+    
+                self.xydwh.append([x,y,d,w,h])
 
             self.cls  = np.array(self.cls)
             self.conf = np.array(self.conf)
-            self.xywh = np.array(self.xywh)
+            self.xydwh = np.array(self.xydwh)
             cls_list.append(self.cls)
 
         return color_image, depth_image
@@ -203,8 +212,8 @@ class DHResults:
                        [96, 48, 176]] # purple for hand
         
         annoted_image = color_image.copy()
-        for (box, conf, cls) in zip(self.xywh, self.conf, self.cls):
-            x, y, w, h = map(int, box)
+        for (box, conf, cls) in zip(self.xydwh, self.conf, self.cls):
+            x, y, _, w, h = map(int, box)
             label = f"{cls}: {conf:.2f}"
             
             # Draw the bounding boxes

@@ -78,7 +78,7 @@ class Board:
     # |  (dx, dz)       |  (dx, 0)        |  (dx, -dz)      |
     # +-----------------+-----------------+-----------------+
 
-    def positionToCell(self, x: float, z: float) -> tuple:
+    def positionToCellID(self, x: float, z: float) -> tuple:
         """
         Converts position coordinates to cell indices.
         returns None if the position is not in the play zone, otherwise returns a tuple (i, j)
@@ -91,7 +91,7 @@ class Board:
 
         return (i, j)
     
-    def cellToPosition(self, i: int, j: int) -> tuple:
+    def cellIDToPosition(self, i: int, j: int) -> tuple:
         """
         Converts cell indices to position coordinates.
         """
@@ -106,7 +106,7 @@ class Board:
     # | 11 |    |    |    | 5  |
     # |    | 6  |  7 | 8  |    |
 
-    def positionToStorage(self, x: float, z: float) -> int:
+    def positionToStorageID(self, x: float, z: float) -> int:
         """
         Converts position coordinates to storage indices.
         returns None if the position is not in any player's zone, otherwise returns a tuple (storageID, cellID)
@@ -125,7 +125,7 @@ class Board:
 
         return None
     
-    def storageToPosition(self, cellID: int) -> tuple:
+    def storageIDToPosition(self, cellID: int) -> tuple:
         """
         Converts storage indices to position coordinates.
         """
@@ -148,7 +148,7 @@ class Board:
 
         return (x, z)
 
-    def getNextEmptyStorage(self) -> int:
+    def getNextEmptyStorageID(self) -> int:
         """
         Returns the next empty storage index.
         If no empty storage is found, returns None.

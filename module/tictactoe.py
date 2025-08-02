@@ -60,6 +60,7 @@ class TicTacToe () :
         self.chosenStrategy = None
        
         self.restPosition = np.array([0, -160, 0])
+        self.restOpeningDistance = 35
 
         # Initialize Emio simulation
         self.simulation = Sofa.Core.Node("rootnode")
@@ -70,21 +71,6 @@ class TicTacToe () :
             self.simulationStep()
 
 
-    def displayResults(self):
-        """
-        Display the results of the game and make an emote if there is a winner
-        """
-        results = self.board.getWinner()
-        if results == Results.DRAW.value : 
-            logger.info("It's a draw!")
-        elif results == self.humanColor:
-            logger.info("Congratulations, you won!")
-            self.winEmote()
-        else:
-            logger.info("Sorry, Emio won.")
-            self.loseEmote()
-
-        
     def displayBoard(self):
         """
         Display the board on the terminal (will be replace by the GUI)
@@ -96,13 +82,29 @@ class TicTacToe () :
         self.board.display()
         
 
+    def displayResults(self):
+        """
+        Display the results of the game and make an emote if there is a winner
+        """
+        results = self.board.getWinner()
+        if results == Results.DRAW.value : 
+            logger.info("It's a draw!")
+            self.loseEmote()
+        elif results == self.humanColor:
+            logger.info("Congratulations, you won!")
+            self.winEmote()
+        else:
+            logger.info("Yay, I won!")
+            self.loseEmote()
+
+
     def hasWinner(self):
         return self.board.hasWinner()
     
 
     def __emioPlays(self, i, j):
-        position = self.board.cellToPosition(i, j)
-        logger.info(f"Emio plays: ({i}, {j}, '{Classes._member_names_[self.computerColor]}')")
+        position = self.board.cellIDToPosition(i, j)
+        logger.info(f"I'm playing: ({i}, {j}, '{Classes._member_names_[self.computerColor]}')")
         return position
     
 
@@ -136,7 +138,7 @@ class TicTacToe () :
         """
 
         board = Board(copy.deepcopy(self.board.state))
-        # Check if emio can win
+        # Check if Emio can win
         for i in range(3):
             for j in range(3):
                 if self.board.state[i][j] == CellState.EMPTY.value:
@@ -183,7 +185,6 @@ class TicTacToe () :
                     return None
                 while True:
                     i, j = random.choice(emptyCell)
-                    logger.debug("Emio plays: ", i, j)
                     if  self.board.state[i][j] == Classes.EMPTY.value:
                         self.board.state[i][j] = self.computerColor
                         return self.__emioPlays(i, j)
@@ -268,35 +269,29 @@ class TicTacToe () :
         return None
 
 
-    def chooseCubeToPlay(self, color, depth_image, cellPosition):
+    def getNearestStorageCube(self, color, cellPosition) -> list[float]:
         """
-        Choose the next cube Emio will play
-        Choose the nearest cube from the camera
-
         Parameters:
         -----------
         color           : int. The class of Emio's pawns
-        depth_image     : numpy.ndarray. The depth image returned by the camera
+        cellPosition
 
         Return:
         -----------
-        ret             : bool. True if the position and the index have been correctly calculated, False otherwise
-        index           : int. The index (in result) of the chosen cube to play
+        cubePosition
         """
-        xywh = self.dhresults.xywh
+        xydwh = self.dhresults.xydwh
         cls = self.dhresults.cls
         prob = self.dhresults.conf
 
         distance_min = np.finfo(np.float32).max
-        index = None
-
+        position = None
         for i in range(len(cls)):
             
             # If the object is the color emio's playing
             if int(cls[i]) == color and prob[i] > 0.6:
 
-                depth = self.getMedianDepth(i, depth_image)
-                position = self.camera.image_to_simulation(int(xywh[i][0]), int(xywh[i][1]), depth)
+                position = self.camera.image_to_simulation(int(xydwh[i][0]), int(xydwh[i][1]), int(xydwh[i][2]))
 
                 # If the position is valid
                 if position is None:
@@ -311,17 +306,35 @@ class TicTacToe () :
                     # Take the closest object
                     if distance < distance_min:
                         distance_min = distance
-                        index = i
+                        position[0], position[2] = self.board.storageIDToPosition(self.board.positionToStorageID(position[0], position[2]))
 
         # If it has found an object to play
-        if index is None:
-            logger.info("Emio did not find a cube to play.")
+        if position is None:
+            logger.info("I did not find a cube to play.")
             return None
         
-        return index
+        return position
         
     
-    def userPlayed(self, depth_image) -> bool:
+    def getNearestStoragePosition(self, cubePosition) -> list[float]:
+        """
+        Return:
+        -----------
+        cellPosition
+        """
+        distance_min = np.finfo(np.float32).max
+        closestCellPosition = None
+        while self.board.getNextEmptyStorageID() is not None:
+            cellPosition = self.board.storageIDToPosition(self.board.getNextEmptyStorageID()) # Chose a position of an empty box in the storage zone of the good class
+            distance = np.linalg.norm(np.array(cellPosition) - np.array(cubePosition))
+            if distance < distance_min:
+                closestCellPosition = cellPosition
+                distance_min = distance
+
+        return closestCellPosition
+
+
+    def userPlayed(self) -> bool:
         """
         Detect change of the board state, do not detect any change if a hand is detected
         If the colors of the player is not set and a change is detected, set the color of the player
@@ -329,7 +342,7 @@ class TicTacToe () :
         Do not detect change if the position or the depth are miscalculated
         """
         cls = self.dhresults.cls
-        xywh = self.dhresults.xywh 
+        xydwh = self.dhresults.xydwh 
 
         playZone_cls = [] # List of classes of the detected objects in the play zone
 
@@ -341,12 +354,7 @@ class TicTacToe () :
         
         for i in range(len(cls)): # Loop on the detected classes
             
-            depth = self.getMedianDepth(i, depth_image)
-            if depth is None:
-                logger.debug("Depth problem.")
-                return False
-            
-            position = self.camera.image_to_simulation(xywh[i][0], xywh[i][1], depth)
+            position = self.camera.image_to_simulation(xydwh[i][0], xydwh[i][1], xydwh[i][2])
 
             # If the position is not valid no change detected
             if position is None:
@@ -356,7 +364,7 @@ class TicTacToe () :
             # We only look object in the play zone
             if self.board.isInPlayZone(position[0], position[2]):
                 playZone_cls.append(cls[i]) 
-                a, b = self.board.positionToCell(position[0], position[2])
+                a, b = self.board.positionToCellID(position[0], position[2])
                 if cls[i] != Classes.EMPTY.value: 
                     new_boardstate[a][b] = int(cls[i])
                     
@@ -393,80 +401,66 @@ class TicTacToe () :
         return False
             
 
-    def selectCubeToStore(self, depth_image):
+    def selectCubeInPlayZone(self):
         """
         Choose the next cube to be stored
 
         Parameters:
         -----------
-        depth_image     : numpy.ndarray. The depth image returned by the camera
-
         Return:
         position        : numpy.ndarray. The real world coordinates of the cube
         """
         cls = self.dhresults.cls
-        xywh = self.dhresults.xywh 
+        xydwh = self.dhresults.xydwh 
 
         for i in range(len(cls)):
 
             if int(cls[i]) == Classes.DOG.value or int(cls[i]) == Classes.CAT.value:
-
-                depth = self.getMedianDepth(self.dhresult, i, depth_image)
-                position = self.camera.image_to_simulation(int(xywh[i][0]), int(xywh[i][1]), depth)
+                position = self.camera.image_to_simulation(int(xydwh[i][0]), int(xydwh[i][1]), int(xydwh[i][2]))
 
                 if self.board.isInPlayZone(position[0], position[2]):
+                    position[0], position[2] = self.board.cellIDToPosition(self.board.positionToCellID(position[0], position[2]))
                     return position
                 
         return None
             
 
-    def updateStorageState(self, depth_image):
+    def updateStorageState(self):
         """
         Detect the storage zone state
         Does not detect if a hand is detected
-
-        Parameters:
-        -----------
-        depth_image     : numpy.ndarray. The depth image returned by the camera
         """
         cls = self.dhresults.cls
-        xywh = self.dhresults.xywh 
+        xydwh = self.dhresults.xydwh 
         for i in range(len(cls)):
 
             if int(cls[i]) == Classes.HAND.value: # If a hand is detected, return
                 return
             
-            depth = self.getMedianDepth(self.dhresults, i, depth_image)
-            position = self.camera.image_to_simulation(int(xywh[i][0]), int(xywh[i][1]), depth)
+            position = self.camera.image_to_simulation(int(xydwh[i][0]), int(xydwh[i][1]), int(xydwh[i][2]))
 
-            j = self.board.positionToStorage(position[0], position[2])
+            j = self.board.positionToStorageID(position[0], position[2])
             if j is not None:
                 self.board.storage[j] = int(cls[i])
 
 
-    def isPlayZoneClear(self, depth_image) -> bool:
+    def isPlayZoneClear(self) -> bool:
         """
         Detect if there is cubes on the play zone
-
-        Parameters:
-        -----------
-        color           : int. The class of Emio's pawns
-        depth_image     : numpy.ndarray. The depth image returned by the camera
 
         Return:
         -----------
         True if the play zone is empty, False otherwise
         """
         cls = self.dhresults.cls
-        xywh = self.dhresults.xywh 
+        xydwh = self.dhresults.xydwh 
         
         if self.dhresults.isHandDetected(): # If there is a hand return
             return False
 
         for i in range(len(cls)): # Loop on the detected classes    
             # Get the position of the object
-            depth = self.getMedianDepth(self.dhresults, i, depth_image)
-            position = self.camera.image_to_simulation(int(xywh[i][0]), int(xywh[i][1]), depth)
+            position = self.camera.image_to_simulation(int(xydwh[i][0]), int(xydwh[i][1]), int(xydwh[i][1]))
 
             if ((int(cls[i]) == Classes.DOG.value or int(cls[i]) == Classes.CAT.value) and 
                 self.board.isInPlayZone(position[0], position[2])):
@@ -493,7 +487,6 @@ class TicTacToe () :
             return False
 
         for i in range(len(cls)):
-            # If the object is an emio's class object
             if (int(cls[i]) == Classes.CAT.value or int(cls[i]) == Classes.DOG.value) and prob[i] > 0.6:
                 index = i
                 break
@@ -506,40 +499,33 @@ class TicTacToe () :
  
         self.humanColor = int(cls[index])        
         self.computerColor = (self.humanColor + 1) % 2 
-        logger.info(f"Emio chose to play with {Classes._member_names_[self.computerColor]}")
+        logger.info(f"I chose to play with {Classes._member_names_[self.computerColor]}")
         logger.info(f"You are then playing the {Classes._member_names_[self.humanColor]}")
 
         return True
 
 
-    def getMedianDepth(self, i, depth_image) -> float:
+    def makeEmioPlay(self) -> bool:
         """
-        Calculate the depth of the pixel bytaking the median of the valid depths in the bounding box
-
-        Parameters:
-        -----------
-        i               : int. The index (of result) of the object
-        depth_image     : numpy.ndarray. The depth image returned by the camera
+        Make Emio chose a move and then play it
 
         Return:
-        ------------
-        The median of the depth valid values if there is at least one, None otherwise 
+        -----------
+        True if Emio has played, False otherwise
         """
-        xywh = self.dhresults.xywh[i]
-        x_center, y_center, width, height = xywh
-    
-        x1 = max(0, int(x_center - width / 2))
-        y1 = max(0, int(y_center - height / 2))
-        x2 = min(depth_image.shape[1], int(x_center + width / 2))
-        y2 = min(depth_image.shape[0], int(y_center + height / 2))
-        depth_values = depth_image[y1:y2, x1:x2].flatten()
-        
-        valid_depth_values = depth_values[depth_values > 0]
-    
-        if len(valid_depth_values) > 0:
-            return np.median(valid_depth_values)
-        
-        return None
+        xydwh = self.dhresults.xydwh
+        cellPosition = self.chosenStrategy()
+
+        # The tree next line are to be commented if you want to use the hardcoded position of the box instead of the calculated one
+        cubePosition = None
+        while cubePosition is None:
+            self.dhresults.updateAndDisplayAnnotatedImage()
+            cubePosition = self.getNearestStorageCube(self.computerColor, cellPosition)
+
+        logger.debug(f"Picking cube at position: [{cubePosition[0]:.2f}, {cubePosition[1]:.2f}, {cubePosition[2]:.2f}]")
+        self.sequenceMove(cubePosition, cellPosition)
+
+        self.takePhotoForDatabase()
 
 
     def sendGripperPosition(self, x, y, z, speed=300, minSteps=40, withPI=False):
@@ -563,6 +549,7 @@ class TicTacToe () :
         Move Emio to the rest position
         """
         self.sendGripperPosition(self.restPosition[0], self.restPosition[1], self.restPosition[2], minSteps=0)
+        self.sendGripperOpening(self.restOpeningDistance)
 
 
     def simulationStep(self):        
@@ -587,7 +574,6 @@ class TicTacToe () :
         y_move = -230
         y_place = -270
         y_pick = -290
-        gripper_rest = 35
         gripper_open = 45
         gripper_close = 15
 
@@ -606,15 +592,76 @@ class TicTacToe () :
         self.sendGripperPosition(cellPosition[0], y_move, cellPosition[1])
 
         # Back to rest position
-        self.sendGripperOpening(gripper_rest)
         self.sendGripperPosition(self.restPosition[0], y_move, self.restPosition[2])
         self.moveEmioToRestPosition()
     
 
-    def checkBoard(self):
+    def checkAndCorrectBoard(self):
         """
         Check that the real board matches
         """
+        xydwh = self.dhresults.xydwh
+        cls = self.dhresults.cls
+
+        def getRealBoard():
+            realBoard = Board()
+            for i in range(len(cls)):
+                
+                # If the object is the color emio's playing
+                if int(cls[i]) == Classes.DOG.value or int(cls[i]) == Classes.CAT.value:
+
+                    position = self.camera.image_to_simulation(int(xydwh[i][0]), int(xydwh[i][1]), int(xydwh[i][2]))
+
+                    if self.board.isInPlayZone(position[0], position[2]):
+                        x, y = self.board.positionToCellID(position[0], position[2])
+                        realBoard.state[x, y] = int(cls[i])
+            return realBoard
+
+        realBoard = getRealBoard()
+        matchingCells = (realBoard.state == self.board.state)
+
+        nbMaximumAttempts = 2
+        while not matchingCells.all() and nbMaximumAttempts > 0:
+            nbMaximumAttempts -= 1
+            for i in range(3):
+                for j in range(3):
+                    if not matchingCells[i][j]:
+
+                        # Should not be empty
+                        if realBoard.state[i][j] == Classes.EMPTY.value:
+                            cellPosition = self.board.cellIDToPosition(realBoard.state[i][j])
+                            cubePosition = self.getNearestStorageCube(self.board.state[i][j], cellPosition)
+                            if cellPosition is not None and cubePosition is not None:
+                                self.sequenceMove(cubePosition, cellPosition)
+
+                        # Should be empty
+                        elif self.board.state[i][j] == Classes.EMPTY.value:
+                            cubePosition = self.board.cellIDToPosition(self.board.state[i][j])
+                            cellPosition = self.getNearestStoragePosition(cubePosition)
+                            if cellPosition is not None and cubePosition is not None:
+                                self.sequenceMove(cubePosition, cellPosition)
+
+                        # Should not be this color
+                        else:
+                            # First empty the cell
+                            cubePosition = self.board.cellIDToPosition(self.board.state[i][j])
+                            cellPosition = self.getNearestStoragePosition(cubePosition)
+                            if cellPosition is not None and cubePosition is not None:
+                                self.sequenceMove(cubePosition, cellPosition)
+                            
+                            # Get the right color
+                            cellPosition = self.board.cellIDToPosition(realBoard.state[i][j])
+                            cubePosition = self.getNearestStorageCube(self.board.state[i][j], cellPosition)
+                            if cellPosition is not None and cubePosition is not None:
+                                self.sequenceMove(cubePosition, cellPosition)
+
+            self.dhresults.updateAndDisplayAnnotatedImage()
+            realBoard = getRealBoard()
+
+        if not matchingCells().all():
+            logger.error("Sorry I tried to correct the real board but did not succeed. Can you fix the board? Thank you.")
+            self.displayBoard()
+
         return
 
 
@@ -622,30 +669,22 @@ class TicTacToe () :
         """
         Make Emio clear the board
         """
-        _, depthImage = self.dhresults.getProcessedImages()
 
-        while not self.isPlayZoneClear(depthImage): # If the playzone is not empty
-            _, depthImage = self.dhresults.updateAndDisplayAnnotatedImage()
-            self.updateStorageState(depthImage) # Update the storage state to know where to put the cube to store
+        self.dhresults.updateAndDisplayAnnotatedImage()
+        while not self.isPlayZoneClear(): # If the playzone is not empty
+            self.updateStorageState() # Update the storage state to know where to put the cube to store
             
-            cubePosition = self.board.cellToPosition(self.board.positionToCell(self.selectCubeToStore(depthImage))) # Chose the next cube to store and return its position
-            distance_min = np.finfo(np.float32).max
-            closestCellPosition = None
-            while self.board.getNextEmptyStorage() is not None:
-                cellPosition = self.board.storageToPosition(self.board.getNextEmptyStorage()) # Chose a position of an empty box in the storage zone of the good class
-                distance = np.linalg.norm(np.array(cellPosition) - np.array(cubePosition))
-                if distance < distance_min:
-                    closestCellPosition = cellPosition
-                    distance_min = distance
+            cubePosition = self.selectCubeInPlayZone() # Chose the next cube to store and return its position
+            cellPosition = self.getNearestStoragePosition(cubePosition)
 
-            if closestCellPosition is None or cubePosition is None:
+            if cellPosition is None or cubePosition is None:
                 logger.error("No empty storage left to clear the board.")
                 return
             else:
                 self.sequenceMove(cubePosition, cellPosition)
                 self.takePhotoForDatabase()
         
-            depthImage = self.dhresults.updateAndDisplayAnnotatedImage()
+            self.dhresults.updateAndDisplayAnnotatedImage()
 
 
     def winEmote(self):
@@ -677,35 +716,6 @@ class TicTacToe () :
         self.nbEmptyCell = 9
         self.results = None
         self.humanColor = None
-
-
-    def makeEmioPlay(self) -> bool:
-        """
-        Make Emio chose a move and then play it
-
-        Return:
-        -----------
-        True if Emio has played, False otherwise
-        """
-        cellPosition = self.chosenStrategy()
-
-        # The tree next line are to be commented if you want to use the hardcoded position of the box instead of the calculated one
-        _, depth_image = self.dhresults.updateAndDisplayAnnotatedImage()
-
-        cubePosition = None
-        index = None
-        while cubePosition is None:
-            _, depth_image = self.dhresults.updateAndDisplayAnnotatedImage()
-            index = self.chooseCubeToPlay(self.computerColor, depth_image, cellPosition)
-            depth = self.getMedianDepth(index, depth_image)
-            cubePosition = self.camera.image_to_simulation(int(self.dhresults.xywh[index][0]),int(self.dhresults.xywh[index][1]), depth)
-            i = self.board.positionToStorage(cubePosition[0], cubePosition[2])
-            cubePosition[0], cubePosition[2] = self.board.storageToPosition(i)
-            
-        logger.debug(f"Picking cube at position: [{cubePosition[0]:.2f}, {cubePosition[1]:.2f}, {cubePosition[2]:.2f}]")
-        self.sequenceMove(cubePosition, cellPosition)
-
-        self.takePhotoForDatabase()
     
 
     def takePhotoForDatabase(self):

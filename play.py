@@ -1,8 +1,5 @@
 
 import time 
-import cv2 as cv
-import numpy as np
-import os
 
 import DarkHelp
 
@@ -102,17 +99,17 @@ def firstRound(tictactoe: TicTacToe, dhresults: DHResults):
     Decide who plays first and distribute the colors
     """
     t0 = time.time()
-    _, depthImage = dhresults.updateAndDisplayAnnotatedImage()
-
-    # Wait 10 seconds for the player to play, or if a hand is detected, then Emio plays
-    while (dhresults.isHandDetected() or 
-           (time.time()-t0 < 10 and not tictactoe.userPlayed(depthImage))): 
-        
-        _, depthImage = dhresults.updateAndDisplayAnnotatedImage()
+    
+    # Wait 10 seconds for the player to play, 
+    # or if a hand is detected, then Emio plays
+    dhresults.updateAndDisplayAnnotatedImage()
+    while (dhresults.isHandDetected() or (time.time()-t0 < 10 and not tictactoe.userPlayed())): 
+        dhresults.updateAndDisplayAnnotatedImage()
 
     tictactoe.takePhotoForDatabase()
 
     if tictactoe.humanColor is None: # If the human did not play first, Emio will take the first detected color
+        dhresults.updateAndDisplayAnnotatedImage()
         while not tictactoe.makeEmioChooseColor():
             dhresults.updateAndDisplayAnnotatedImage()
     else:
@@ -133,7 +130,6 @@ def gameLoop(tictactoe: TicTacToe, dhresults: DHResults):
         # Initialize the game
         tictactoe.reset()
         tictactoe.moveEmioToRestPosition()
-        tictactoe.sendGripperOpening(35)
         tictactoe.displayBoard()
 
         # Photo step, if the user chose to take photo, create a directory to store them
@@ -148,25 +144,26 @@ def gameLoop(tictactoe: TicTacToe, dhresults: DHResults):
             logger.debug("Starting a new round.")
             logger.info(f"Your turn to play: ('{Classes._member_names_[tictactoe.humanColor]}')")
             
-            # We wait for the human to play and the boardstate to be has it should  
-            _, depthImage = dhresults.updateAndDisplayAnnotatedImage()
-            while not tictactoe.userPlayed(depthImage): 
-                _, depthImage = dhresults.updateAndDisplayAnnotatedImage()
-
-            # The human has played, now it's Emio's turn
-            tictactoe.takePhotoForDatabase()
+            # We wait for the human to play   
+            dhresults.updateAndDisplayAnnotatedImage()
+            while not tictactoe.userPlayed(): 
+                dhresults.updateAndDisplayAnnotatedImage()
             tictactoe.displayBoard()
+
+            # Check results
+            tictactoe.takePhotoForDatabase()
             if tictactoe.hasWinner(): # If there is a winner or a draw, break
                 break
 
-            tictactoe.makeEmioPlay() # Emio plays
+            # The human has played, now it's Emio's turn
+            tictactoe.makeEmioPlay() 
             tictactoe.displayBoard()
-            tictactoe.checkBoard()
+            tictactoe.checkAndCorrectBoard()
 
         tictactoe.displayResults()
         tictactoe.moveEmioToRestPosition()
 
-        input("Press any key to make Emio clear the board.")
+        input("Press any key to make me clear the board.")
         tictactoe.clearBoard()
     
 
