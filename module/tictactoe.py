@@ -723,6 +723,7 @@ class TicTacToe () :
         Take a photo and save it in the database
         """
         if self.photo:
-            color_image, _ = self.getProcessedImages()
-            cv.imwrite(os.path.join(self.path, f"Photo_{self.photoID}.jpg"), color_image)
-            self.photoID+=1
+            color_image, _, _ = self.dhresults.getProcessedImages()
+            if color_image is not None:
+                cv.imwrite(os.path.join(self.path, f"Photo_{self.photoID}.jpg"), color_image)
+                self.photoID+=1

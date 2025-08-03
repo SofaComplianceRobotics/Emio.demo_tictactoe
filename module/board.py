@@ -37,7 +37,6 @@ class CellState(Enum):
     DOG = 0
     CAT = 1
     EMPTY = 2
-    UNDIFINED = -1
 
 
 class Board:
@@ -54,7 +53,7 @@ class Board:
                                     [CellState.EMPTY.value, CellState.EMPTY.value, CellState.EMPTY.value],
                                     [CellState.EMPTY.value, CellState.EMPTY.value, CellState.EMPTY.value]])
             
-            self.storage = [[CellState.UNDIFINED.value]*12]
+            self.storage = [[CellState.EMPTY.value]*12]
 
     def isInPlayZone(self, x: float, z: float) -> bool:
         return (self.playZone.xmin <= x <= self.playZone.xmax and
@@ -148,6 +147,7 @@ class Board:
 
         return (x, z)
 
+
     def getNextEmptyStorageID(self) -> int:
         """
         Returns the next empty storage index.
@@ -157,7 +157,8 @@ class Board:
             if self.storage[i] == CellState.EMPTY:
                 return i
         return None
-    
+
+
     def display(self):
         """
         Display the board on the terminal (will be replace by the GUI)
@@ -174,8 +175,6 @@ class Board:
                     print(" X ", end="")
                 elif i == CellState.CAT.value:
                     print(" O ", end="")
-                elif i == CellState.UNDIFINED.value:
-                    print(" , ", end="")
             print("\n")
 
 

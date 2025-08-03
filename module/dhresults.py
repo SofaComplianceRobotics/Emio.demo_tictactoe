@@ -90,14 +90,12 @@ class DHResults:
         self.camera.update()
         depth_frame = self.camera.depth_frame
         color_frame = self.camera.frame
-        state =True
      
         if depth_frame is None or color_frame is None:
             logger.error('Problem with accessing the frames.')
-            state = False
-            return state, color_frame, depth_frame
+            return color_frame, depth_frame
 
-        return state, color_frame,  depth_frame
+        return color_frame, depth_frame
     
 
     def getProcessedImages(self):
@@ -106,17 +104,18 @@ class DHResults:
         """
         _, color_image, depth_image = self.getFrame()
 
-        mask = np.zeros(color_image.shape[:2], dtype="uint8")
-        cv.rectangle(mask, (30, 30), (400, 450), 255, -1)
-        masked = cv.bitwise_and(color_image, color_image, mask=mask)
+        masked_image = None
+        if color_image is not None:
+            mask = np.zeros(color_image.shape[:2], dtype="uint8")
+            cv.rectangle(mask, (30, 30), (400, 450), 255, -1)
+            masked_image = cv.bitwise_and(color_image, color_image, mask=mask)
 
-        return masked, depth_image
+        return color_image, masked_image, depth_image
 
 
     def updateAndDisplayAnnotatedImage(self, extra=True):
-        color_image, depth_image = self.update()
+        color_image, _ = self.update()
         self.displayAnnotatedImage(color_image, extra=extra)
-        return color_image, depth_image
 
 
     def checkConsistency(self, cls_list):
@@ -152,9 +151,11 @@ class DHResults:
             self.conf = []       
             self.cls  = []  
 
-            color_image, depth_image = self.getProcessedImages()
+            color_image, masked_image, depth_image = self.getProcessedImages()
+            if color_image is None:
+                continue
 
-            image_data = np.ascontiguousarray(color_image, dtype=np.uint8)
+            image_data = np.ascontiguousarray(masked_image, dtype=np.uint8)
 
             # Update the model prediction
             DarkHelp.Predict(self.dh, 640, 480, 
@@ -205,6 +206,8 @@ class DHResults:
 
         if color_image is None:
             color_image = self.camera.frame
+        if color_image is None:
+            return
 
         class_color = [[0, 0, 255],   # red for dog
                        [0, 255, 0],   # green for cat
