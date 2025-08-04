@@ -128,6 +128,7 @@ def gameLoop(tictactoe: TicTacToe, dhresults: DHResults):
     while startNewGameStep():
 
         # Initialize the game
+        tictactoe.clearBoard()
         tictactoe.reset()
         tictactoe.moveEmioToRestPosition()
         tictactoe.displayBoard()
@@ -162,9 +163,6 @@ def gameLoop(tictactoe: TicTacToe, dhresults: DHResults):
 
         tictactoe.displayResults()
         tictactoe.moveEmioToRestPosition()
-
-        input("Press any key to make me clear the board.")
-        tictactoe.clearBoard()
     
 
 def main():

@@ -53,7 +53,7 @@ class Board:
                                     [CellState.EMPTY.value, CellState.EMPTY.value, CellState.EMPTY.value],
                                     [CellState.EMPTY.value, CellState.EMPTY.value, CellState.EMPTY.value]])
             
-            self.storage = [[CellState.EMPTY.value]*12]
+        self.storage = [CellState.EMPTY.value]*12
 
     def isInPlayZone(self, x: float, z: float) -> bool:
         return (self.playZone.xmin <= x <= self.playZone.xmax and
@@ -77,7 +77,7 @@ class Board:
     # |  (dx, dz)       |  (dx, 0)        |  (dx, -dz)      |
     # +-----------------+-----------------+-----------------+
 
-    def positionToCellID(self, x: float, z: float) -> tuple:
+    def positionToCellIndices(self, x: float, z: float) -> tuple:
         """
         Converts position coordinates to cell indices.
         returns None if the position is not in the play zone, otherwise returns a tuple (i, j)
@@ -90,7 +90,7 @@ class Board:
 
         return (i, j)
     
-    def cellIDToPosition(self, i: int, j: int) -> tuple:
+    def cellIndicesToPosition(self, i: int, j: int) -> tuple:
         """
         Converts cell indices to position coordinates.
         """
@@ -105,10 +105,10 @@ class Board:
     # | 11 |    |    |    | 5  |
     # |    | 6  |  7 | 8  |    |
 
-    def positionToStorageID(self, x: float, z: float) -> int:
+    def positionToStorageIndex(self, x: float, z: float) -> int:
         """
         Converts position coordinates to storage indices.
-        returns None if the position is not in any player's zone, otherwise returns a tuple (storageID, cellID)
+        returns None if the position is not in any player's zone, otherwise returns a tuple (storageID, cellIndex)
 
         """
         if self.isInStorageZone(x, z):
@@ -124,37 +124,37 @@ class Board:
 
         return None
     
-    def storageIDToPosition(self, cellID: int) -> tuple:
+    def storageIndexToPosition(self, cellIndex: int) -> tuple:
         """
         Converts storage indices to position coordinates.
         """
 
-        if 0 > cellID or cellID > 11:
+        if 0 > cellIndex or cellIndex > 11:
             return None
 
-        if 0 <= cellID <= 2:
+        if 0 <= cellIndex <= 2:
             x = - self.playZone.dx * 2
-            z = (1 - cellID % 3) * self.playZone.dz
-        elif 3 <= cellID <= 5:
-            x = (cellID % 3 - 1) * self.playZone.dx
+            z = (1 - cellIndex % 3) * self.playZone.dz
+        elif 3 <= cellIndex <= 5:
+            x = (cellIndex % 3 - 1) * self.playZone.dx
             z = - self.playZone.dz * 2
-        elif 6 <= cellID <= 8:
+        elif 6 <= cellIndex <= 8:
             x = self.playZone.dx * 2
-            z = (1 - cellID % 3) * self.playZone.dz
+            z = (1 - cellIndex % 3) * self.playZone.dz
         else:
-            x = (cellID % 3 - 1) * self.playZone.dx
+            x = (cellIndex % 3 - 1) * self.playZone.dx
             z = self.playZone.dz * 2
 
         return (x, z)
 
 
-    def getNextEmptyStorageID(self) -> int:
+    def getNextEmptyStorageIndex(self) -> int:
         """
         Returns the next empty storage index.
         If no empty storage is found, returns None.
         """
         for i in range(len(self.storage)):
-            if self.storage[i] == CellState.EMPTY:
+            if self.storage[i] == CellState.EMPTY.value:
                 return i
         return None
 

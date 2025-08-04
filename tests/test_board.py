@@ -28,38 +28,38 @@ def test_board_cell_to_position():
     Test that the board cell to position mapping is correct.
     """
     board = Board()
-    assert board.cellIDToPosition(0, 0) == (-PlayZone.dx, PlayZone.dz)
-    assert board.cellIDToPosition(1, 1) == (0, 0)
-    assert board.cellIDToPosition(2, 2) == (PlayZone.dx, -PlayZone.dz)
+    assert board.cellIndicesToPosition(0, 0) == (-PlayZone.dx, PlayZone.dz)
+    assert board.cellIndicesToPosition(1, 1) == (0, 0)
+    assert board.cellIndicesToPosition(2, 2) == (PlayZone.dx, -PlayZone.dz)
 
-    assert board.cellIDToPosition(0, 1) == (-PlayZone.dx, 0)
-    assert board.cellIDToPosition(1, 0) == (0, PlayZone.dz)
-    assert board.cellIDToPosition(2, 1) == (PlayZone.dx, 0)
+    assert board.cellIndicesToPosition(0, 1) == (-PlayZone.dx, 0)
+    assert board.cellIndicesToPosition(1, 0) == (0, PlayZone.dz)
+    assert board.cellIndicesToPosition(2, 1) == (PlayZone.dx, 0)
 
 def test_board_position_to_cell():
     """
     Test that the board position to cell mapping is correct.
     """
     board = Board()
-    assert board.positionToCellID(-PlayZone.dx, PlayZone.dz) == (0, 0)
-    assert board.positionToCellID(0, 0) == (1, 1)
-    assert board.positionToCellID(PlayZone.dx, -PlayZone.dz) == (2, 2)
+    assert board.positionToCellIndices(-PlayZone.dx, PlayZone.dz) == (0, 0)
+    assert board.positionToCellIndices(0, 0) == (1, 1)
+    assert board.positionToCellIndices(PlayZone.dx, -PlayZone.dz) == (2, 2)
 
-    assert board.positionToCellID(-PlayZone.dx, 0) == (0, 1)
-    assert board.positionToCellID(0, PlayZone.dz) == (1, 0)
-    assert board.positionToCellID(PlayZone.dx, 0) == (2, 1)
+    assert board.positionToCellIndices(-PlayZone.dx, 0) == (0, 1)
+    assert board.positionToCellIndices(0, PlayZone.dz) == (1, 0)
+    assert board.positionToCellIndices(PlayZone.dx, 0) == (2, 1)
 
-    assert board.positionToCellID(-35,  37) == (0, 0)
-    assert board.positionToCellID(-25,  -3) == (0, 1)
-    assert board.positionToCellID(-30, -30) == (0, 2)
+    assert board.positionToCellIndices(-35,  37) == (0, 0)
+    assert board.positionToCellIndices(-25,  -3) == (0, 1)
+    assert board.positionToCellIndices(-30, -30) == (0, 2)
 
-    assert board.positionToCellID(0,    30) == (1, 0)
-    assert board.positionToCellID(10,    5) == (1, 1)
-    assert board.positionToCellID(-10, -25) == (1, 2)
+    assert board.positionToCellIndices(0,    30) == (1, 0)
+    assert board.positionToCellIndices(10,    5) == (1, 1)
+    assert board.positionToCellIndices(-10, -25) == (1, 2)
 
-    assert board.positionToCellID(24,   25) == (2, 0)
-    assert board.positionToCellID(32,    7) == (2, 1)
-    assert board.positionToCellID(40,  -43) == (2, 2)
+    assert board.positionToCellIndices(24,   25) == (2, 0)
+    assert board.positionToCellIndices(32,    7) == (2, 1)
+    assert board.positionToCellIndices(40,  -43) == (2, 2)
 
 
 def test_board_is_in_play_zone():
@@ -81,13 +81,14 @@ def test_position_to_storage():
     x = PlayZone.dx / 2
     z = PlayZone.dz / 2
 
-    assert board.positionToStorageID(0, 0) == None
-    assert board.positionToStorageID(PlayZone.xmin - x, PlayZone.zmax - z) == 0
-    assert board.positionToStorageID(PlayZone.xmin - x, PlayZone.zmax - z - PlayZone.dz * 2) == 2
-    assert board.positionToStorageID(0, PlayZone.zmin - z) == 4
-    assert board.positionToStorageID(PlayZone.xmax + x, PlayZone.zmax - z) == 6
-    assert board.positionToStorageID(PlayZone.xmax + x, 0) == 7
-    assert board.positionToStorageID(0, PlayZone.zmax + z) == 10
+    assert board.positionToStorageIndex(0, 0) == None
+    assert board.positionToStorageIndex(PlayZone.xmin - x, PlayZone.zmax - z) == 0
+    assert board.positionToStorageIndex(PlayZone.xmin - x, PlayZone.zmax - z - PlayZone.dz * 2) == 2
+    assert board.positionToStorageIndex(0, PlayZone.zmin - z) == 4
+    assert board.positionToStorageIndex(PlayZone.xmax + x, PlayZone.zmax - z) == 6
+    assert board.positionToStorageIndex(PlayZone.xmax + x, 0) == 7
+    assert board.positionToStorageIndex(0, PlayZone.zmax + z) == 10
+    assert board.positionToStorageIndex(PlayZone.xmax - x, PlayZone.zmin - z ) == 5
 
 def test_storage_to_position():
     """
@@ -98,9 +99,11 @@ def test_storage_to_position():
     x = PlayZone.dx / 2
     z = PlayZone.dz / 2
 
-    assert board.storageIDToPosition(12) == None
-    assert board.storageIDToPosition(0) == (PlayZone.xmin - x, PlayZone.zmax - z)
-    assert board.storageIDToPosition(1) == (PlayZone.xmin - x, PlayZone.zmax - z - PlayZone.dz)
+    assert board.storageIndexToPosition(12) == None
+    assert board.storageIndexToPosition(0) == (PlayZone.xmin - x, PlayZone.zmax - z)
+    assert board.storageIndexToPosition(1) == (PlayZone.xmin - x, PlayZone.zmax - z - PlayZone.dz)
+    assert board.storageIndexToPosition(2) == (PlayZone.xmin - x, PlayZone.zmax - z - PlayZone.dz*2)
+    assert board.storageIndexToPosition(5) == (PlayZone.xmax - x, PlayZone.zmin - z )
 
 
 def test_board_storage_zone():

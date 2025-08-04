@@ -103,7 +103,7 @@ class TicTacToe () :
     
 
     def __emioPlays(self, i, j):
-        position = self.board.cellIDToPosition(i, j)
+        position = self.board.cellIndicesToPosition(i, j)
         logger.info(f"I'm playing: ({i}, {j}, '{Classes._member_names_[self.computerColor]}')")
         return position
     
@@ -269,6 +269,15 @@ class TicTacToe () :
         return None
 
 
+    def imageToSimulationPosition(self, x, y, z):
+        """
+        We only use x and z position in this program  
+        """
+        position = [0, 0]
+        position[0], _, position[1] = self.camera.image_to_simulation(int(x), int(y), z)
+        return position
+
+
     def getNearestStorageCube(self, color, cellPosition) -> list[float]:
         """
         Parameters:
@@ -285,38 +294,40 @@ class TicTacToe () :
         prob = self.dhresults.conf
 
         distance_min = np.finfo(np.float32).max
-        position = None
+        nearestStoragePosition = None
         for i in range(len(cls)):
             
             # If the object is the color emio's playing
             if int(cls[i]) == color and prob[i] > 0.6:
 
-                position = self.camera.image_to_simulation(int(xydwh[i][0]), int(xydwh[i][1]), int(xydwh[i][2]))
+                position = self.imageToSimulationPosition(xydwh[i][0], xydwh[i][1], xydwh[i][2])
 
                 # If the position is valid
                 if position is None:
                     logger.debug("Problem with the estimated position.")
                     continue 
                 
-                if not self.board.isInPlayZone(position[0], position[2]):
+                if not self.board.isInPlayZone(position[0], position[1]):
                     # If the object is not on the play zone
-
-                    distance = np.linalg.norm(np.array(cellPosition)-np.array([position[0], position[2]]))
-                    logger.debug(f"Found a cube to play, not in play zone: {position, Classes._member_names_[int(cls[i])], distance}")
+                    distance = np.linalg.norm(np.array(cellPosition)-np.array(position))
+                    storageIndex = self.board.positionToStorageIndex(position[0], position[1])
+                    storagePosition = self.board.storageIndexToPosition(storageIndex)
+                    logger.debug(f"Found a cube to play, not in play zone: {position, Classes._member_names_[int(cls[i])], distance, storageIndex, storagePosition}")
                     # Take the closest object
                     if distance < distance_min:
                         distance_min = distance
-                        position[0], position[2] = self.board.storageIDToPosition(self.board.positionToStorageID(position[0], position[2]))
+                        nearestStoragePosition = np.copy(storagePosition)
 
         # If it has found an object to play
-        if position is None:
+        if nearestStoragePosition is None:
             logger.info("I did not find a cube to play.")
             return None
         
-        return position
+        logger.debug(f"Found a cube to play, nearest from cell position: {nearestStoragePosition}")
+        return nearestStoragePosition
         
     
-    def getNearestStoragePosition(self, cubePosition) -> list[float]:
+    def getNearestEmptyStoragePosition(self, cubePosition) -> list[float]:
         """
         Return:
         -----------
@@ -324,12 +335,14 @@ class TicTacToe () :
         """
         distance_min = np.finfo(np.float32).max
         closestCellPosition = None
-        while self.board.getNextEmptyStorageID() is not None:
-            cellPosition = self.board.storageIDToPosition(self.board.getNextEmptyStorageID()) # Chose a position of an empty box in the storage zone of the good class
-            distance = np.linalg.norm(np.array(cellPosition) - np.array(cubePosition))
-            if distance < distance_min:
-                closestCellPosition = cellPosition
-                distance_min = distance
+
+        for i in range(len(self.board.storage)):
+            if self.board.storage[i] == Classes.EMPTY.value:
+                cellPosition = self.board.storageIndexToPosition(i) # Chose a position of an empty box in the storage zone of the good class            
+                distance = np.linalg.norm(np.array(cellPosition) - np.array(cubePosition))
+                if distance < distance_min:
+                    closestCellPosition = cellPosition
+                    distance_min = distance
 
         return closestCellPosition
 
@@ -354,7 +367,7 @@ class TicTacToe () :
         
         for i in range(len(cls)): # Loop on the detected classes
             
-            position = self.camera.image_to_simulation(xydwh[i][0], xydwh[i][1], xydwh[i][2])
+            position = self.imageToSimulationPosition(xydwh[i][0], xydwh[i][1], xydwh[i][2])
 
             # If the position is not valid no change detected
             if position is None:
@@ -362,9 +375,9 @@ class TicTacToe () :
                 return False
 
             # We only look object in the play zone
-            if self.board.isInPlayZone(position[0], position[2]):
+            if self.board.isInPlayZone(position[0], position[1]):
                 playZone_cls.append(cls[i]) 
-                a, b = self.board.positionToCellID(position[0], position[2])
+                a, b = self.board.positionToCellIndices(position[0], position[1])
                 if cls[i] != Classes.EMPTY.value: 
                     new_boardstate[a][b] = int(cls[i])
                     
@@ -416,11 +429,12 @@ class TicTacToe () :
         for i in range(len(cls)):
 
             if int(cls[i]) == Classes.DOG.value or int(cls[i]) == Classes.CAT.value:
-                position = self.camera.image_to_simulation(int(xydwh[i][0]), int(xydwh[i][1]), int(xydwh[i][2]))
 
-                if self.board.isInPlayZone(position[0], position[2]):
-                    position[0], position[2] = self.board.cellIDToPosition(self.board.positionToCellID(position[0], position[2]))
-                    return position
+                position = self.imageToSimulationPosition(xydwh[i][0], xydwh[i][1], xydwh[i][2])
+
+                if self.board.isInPlayZone(position[0], position[1]):
+                    x, y = self.board.positionToCellIndices(position[0], position[1])
+                    return self.board.cellIndicesToPosition(x, y)
                 
         return None
             
@@ -432,16 +446,18 @@ class TicTacToe () :
         """
         cls = self.dhresults.cls
         xydwh = self.dhresults.xydwh 
+
+        if self.dhresults.isHandDetected(): # If there is a hand return
+            return 
+        
+        self.board.storage = np.copy(Board().storage)
         for i in range(len(cls)):
-
-            if int(cls[i]) == Classes.HAND.value: # If a hand is detected, return
-                return
             
-            position = self.camera.image_to_simulation(int(xydwh[i][0]), int(xydwh[i][1]), int(xydwh[i][2]))
-
-            j = self.board.positionToStorageID(position[0], position[2])
-            if j is not None:
-                self.board.storage[j] = int(cls[i])
+            if int(cls[i]) == Classes.DOG.value or int(cls[i]) == Classes.CAT.value:
+                position = self.imageToSimulationPosition(xydwh[i][0], xydwh[i][1], xydwh[i][2])
+                j = self.board.positionToStorageIndex(position[0], position[1])
+                if j is not None:
+                    self.board.storage[j] = int(cls[i])
 
 
     def isPlayZoneClear(self) -> bool:
@@ -459,12 +475,12 @@ class TicTacToe () :
             return False
 
         for i in range(len(cls)): # Loop on the detected classes    
-            # Get the position of the object
-            position = self.camera.image_to_simulation(int(xydwh[i][0]), int(xydwh[i][1]), int(xydwh[i][1]))
+            if int(cls[i]) == Classes.DOG.value or int(cls[i]) == Classes.CAT.value:
+                # Get the position of the object
+                position = self.imageToSimulationPosition(xydwh[i][0], xydwh[i][1], xydwh[i][1])
 
-            if ((int(cls[i]) == Classes.DOG.value or int(cls[i]) == Classes.CAT.value) and 
-                self.board.isInPlayZone(position[0], position[2])):
-                return False
+                if self.board.isInPlayZone(position[0], position[1]):
+                    return False
         
         return True
     
@@ -513,7 +529,6 @@ class TicTacToe () :
         -----------
         True if Emio has played, False otherwise
         """
-        xydwh = self.dhresults.xydwh
         cellPosition = self.chosenStrategy()
 
         # The tree next line are to be commented if you want to use the hardcoded position of the box instead of the calculated one
@@ -522,7 +537,7 @@ class TicTacToe () :
             self.dhresults.updateAndDisplayAnnotatedImage()
             cubePosition = self.getNearestStorageCube(self.computerColor, cellPosition)
 
-        logger.debug(f"Picking cube at position: [{cubePosition[0]:.2f}, {cubePosition[1]:.2f}, {cubePosition[2]:.2f}]")
+        logger.debug(f"Picking cube at position: [{cubePosition[0]:.2f}, {cubePosition[1]:.2f}]")
         self.sequenceMove(cubePosition, cellPosition)
 
         self.takePhotoForDatabase()
@@ -557,7 +572,7 @@ class TicTacToe () :
         Sofa.Simulation.animate(self.simulation, self.simulation.dt.value)
 
 
-    def sequenceMove(self, cubePosition, cellPosition):
+    def sequenceMove(self, cubePosition, cellPosition, endInRestPosition=True):
         """
         Make Emio move through a sequence of movement from:
          1. taking the cube
@@ -572,18 +587,20 @@ class TicTacToe () :
 
         # Define the offset y above the cube and the offset to release the cube
         y_move = -230
-        y_place = -270
+        y_place = -280
         y_pick = -290
-        gripper_open = 45
+        gripper_open = 40 
         gripper_close = 15
 
         # Pick the cube
-        self.sendGripperPosition(self.restPosition[0], y_move, self.restPosition[2])
-        self.sendGripperPosition(cubePosition[0], y_move, cubePosition[2])
+        if endInRestPosition:
+            self.sendGripperPosition(self.restPosition[0], y_move, self.restPosition[2])
+
+        self.sendGripperPosition(cubePosition[0], y_move, cubePosition[1])
         self.sendGripperOpening(gripper_open)
-        self.sendGripperPosition(cubePosition[0], y_pick, cubePosition[2], minSteps=70, withPI=True)
+        self.sendGripperPosition(cubePosition[0], y_pick, cubePosition[1], minSteps=70, withPI=True)
         self.sendGripperOpening(gripper_close)
-        self.sendGripperPosition(cubePosition[0], y_move, cubePosition[2])
+        self.sendGripperPosition(cubePosition[0], y_move, cubePosition[1])
 
         # Place the cube in the right cell
         self.sendGripperPosition(cellPosition[0], y_move, cellPosition[1])
@@ -592,36 +609,40 @@ class TicTacToe () :
         self.sendGripperPosition(cellPosition[0], y_move, cellPosition[1])
 
         # Back to rest position
-        self.sendGripperPosition(self.restPosition[0], y_move, self.restPosition[2])
-        self.moveEmioToRestPosition()
+        if endInRestPosition:
+            self.sendGripperPosition(self.restPosition[0], y_move, self.restPosition[2])
+            self.moveEmioToRestPosition()
     
 
     def checkAndCorrectBoard(self):
         """
         Check that the real board matches
         """
-        xydwh = self.dhresults.xydwh
-        cls = self.dhresults.cls
-
-        def getRealBoard():
+        def getRealBoard(cls, xydwh):
             realBoard = Board()
             for i in range(len(cls)):
-                
                 # If the object is the color emio's playing
                 if int(cls[i]) == Classes.DOG.value or int(cls[i]) == Classes.CAT.value:
-
-                    position = self.camera.image_to_simulation(int(xydwh[i][0]), int(xydwh[i][1]), int(xydwh[i][2]))
-
-                    if self.board.isInPlayZone(position[0], position[2]):
-                        x, y = self.board.positionToCellID(position[0], position[2])
+                    position = self.imageToSimulationPosition(xydwh[i][0], xydwh[i][1], xydwh[i][2])
+                    if self.board.isInPlayZone(position[0], position[1]):
+                        x, y = self.board.positionToCellIndices(position[0], position[1])
                         realBoard.state[x, y] = int(cls[i])
             return realBoard
 
-        realBoard = getRealBoard()
+        self.dhresults.updateAndDisplayAnnotatedImage()
+        cls = self.dhresults.cls
+        xydwh = self.dhresults.xydwh
+        realBoard = getRealBoard(cls, xydwh)
         matchingCells = (realBoard.state == self.board.state)
 
         nbMaximumAttempts = 2
-        while not matchingCells.all() and nbMaximumAttempts > 0:
+        while nbMaximumAttempts > 0 and not matchingCells.all():
+
+            logger.info("Boards mismatch. I will try to fix that!")
+            realBoard.display()
+            logger.info("!=")
+            self.board.display()
+
             nbMaximumAttempts -= 1
             for i in range(3):
                 for j in range(3):
@@ -629,37 +650,40 @@ class TicTacToe () :
 
                         # Should not be empty
                         if realBoard.state[i][j] == Classes.EMPTY.value:
-                            cellPosition = self.board.cellIDToPosition(realBoard.state[i][j])
+                            cellPosition = self.board.cellIndicesToPosition(i, j)
                             cubePosition = self.getNearestStorageCube(self.board.state[i][j], cellPosition)
-                            if cellPosition is not None and cubePosition is not None:
+                            if cubePosition is not None:
                                 self.sequenceMove(cubePosition, cellPosition)
 
                         # Should be empty
                         elif self.board.state[i][j] == Classes.EMPTY.value:
-                            cubePosition = self.board.cellIDToPosition(self.board.state[i][j])
-                            cellPosition = self.getNearestStoragePosition(cubePosition)
-                            if cellPosition is not None and cubePosition is not None:
+                            cubePosition = self.board.cellIndicesToPosition(i, j)
+                            cellPosition = self.getNearestEmptyStoragePosition(cubePosition)
+                            if cellPosition is not None:
                                 self.sequenceMove(cubePosition, cellPosition)
 
                         # Should not be this color
                         else:
                             # First empty the cell
-                            cubePosition = self.board.cellIDToPosition(self.board.state[i][j])
-                            cellPosition = self.getNearestStoragePosition(cubePosition)
-                            if cellPosition is not None and cubePosition is not None:
+                            cubePosition = self.board.cellIndicesToPosition(i, j)
+                            cellPosition = self.getNearestEmptyStoragePosition(cubePosition)
+                            if cellPosition is not None:
                                 self.sequenceMove(cubePosition, cellPosition)
                             
                             # Get the right color
-                            cellPosition = self.board.cellIDToPosition(realBoard.state[i][j])
+                            cellPosition = self.board.cellIndicesToPosition(i, j)
                             cubePosition = self.getNearestStorageCube(self.board.state[i][j], cellPosition)
-                            if cellPosition is not None and cubePosition is not None:
+                            if cubePosition is not None:
                                 self.sequenceMove(cubePosition, cellPosition)
 
             self.dhresults.updateAndDisplayAnnotatedImage()
-            realBoard = getRealBoard()
+            cls = self.dhresults.cls
+            xydwh = self.dhresults.xydwh
+            realBoard = getRealBoard(cls, xydwh)
+            matchingCells = (realBoard.state == self.board.state)
 
-        if not matchingCells().all():
-            logger.error("Sorry I tried to correct the real board but did not succeed. Can you fix the board? Thank you.")
+        if not matchingCells.all():
+            logger.error("Sorry I tried to correct the board but did not succeed. Can you fix the board? Thank you.")
             self.displayBoard()
 
         return
@@ -674,17 +698,19 @@ class TicTacToe () :
         while not self.isPlayZoneClear(): # If the playzone is not empty
             self.updateStorageState() # Update the storage state to know where to put the cube to store
             
-            cubePosition = self.selectCubeInPlayZone() # Chose the next cube to store and return its position
-            cellPosition = self.getNearestStoragePosition(cubePosition)
-
-            if cellPosition is None or cubePosition is None:
+            cubePosition = self.selectCubeInPlayZone() # Choose the next cube to store and return its position
+            if cubePosition is None:
+                logger.info("The board is clear.")
+                return
+            
+            cellPosition = self.getNearestEmptyStoragePosition(cubePosition)
+            if cellPosition is None:
                 logger.error("No empty storage left to clear the board.")
                 return
-            else:
-                self.sequenceMove(cubePosition, cellPosition)
-                self.takePhotoForDatabase()
-        
+            
+            self.sequenceMove(cubePosition, cellPosition, endInRestPosition=False)
             self.dhresults.updateAndDisplayAnnotatedImage()
+            self.takePhotoForDatabase()
 
 
     def winEmote(self):

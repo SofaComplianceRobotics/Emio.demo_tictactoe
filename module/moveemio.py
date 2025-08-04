@@ -59,7 +59,7 @@ class MoveEmio(Sofa.Core.Controller):
         # Reset PI
         self.withPI = withPI
         if withPI:
-            self.PI.prev_position = np.arrey(self.emio.CenterPart.TipEffector.EffectorCoord.barycenter.value[0:3])
+            self.PI.prev_position = np.array(self.emio.CenterPart.TipEffector.EffectorCoord.barycenter.value[0:3])
 
         # Set the target
         self.tipTarget = target
@@ -112,6 +112,7 @@ class MoveEmio(Sofa.Core.Controller):
         centerSimulation /= len(attachPositions)
 
         tipReal = centerReal + (tipSimulation - centerSimulation)
+        tipReal[1] = tipSimulation[1] # We only correct the position on x and z 
 
         return tipReal, tipTarget, tipSimulation
 

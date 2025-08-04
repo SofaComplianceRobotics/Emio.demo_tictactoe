@@ -102,7 +102,7 @@ class DHResults:
         """
         Get images from camera and applies an ROI on it 
         """
-        _, color_image, depth_image = self.getFrame()
+        color_image, depth_image = self.getFrame()
 
         masked_image = None
         if color_image is not None:
