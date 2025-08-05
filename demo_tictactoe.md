@@ -11,6 +11,10 @@
 |:--------------------------------------------------------------------:|
 |**Emio with the tic tac toe board.**                               |
 
+|![Emio with the tic tac toe board](assets/labs/demo_tictactoe/data/images/instructions.png){width=50%}|
+|:--------------------------------------------------------------------:|
+|**Screenshot of the instructions on the terminal.**                               |
+
 The pawns are cubes with a photo of a cat or a dog on top. We trained Emio to recognize the cats and dogs. 
 Choose a pawn and start playing with Emio.  
 
