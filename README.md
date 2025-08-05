@@ -68,3 +68,7 @@ To launch the demo:
 3. In `DarkHelp.py` line 86 : `Predict.argtypes = [c_void_p, c_int, c_int, POINTER(c_uint8), c_int]` 
 4. `cd ~/emio-labs/assets/labs/demo_tictactoe`
 5. `python play.py` 
+6. Now follow the instructions on the terminal 
+
+<img src="data/images/instructions.png" width="80%"/>
+
