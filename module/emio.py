@@ -15,6 +15,13 @@ def createScene(rootnode,
     addSolvers(simulation, rayleighStiffness=0.1)
     rootnode.ConstraintSolver.epsilon.value = 0.1
 
+    cameraPosition = [500, -180, 500]
+    rootnode.addObject("LightManager")
+    rootnode.addObject("DirectionalLight", direction=[1, 0, 1])
+    rootnode.addObject("InteractiveCamera", name='camera', 
+                       position=cameraPosition, orientation=[0, 0.383, 0, 0.924])
+    rootnode.addObject("VisualStyle", displayFlags="showVisualModels")
+    
     rootnode.dt = 0.01
     rootnode.gravity = [0., -9810., 0.]
 

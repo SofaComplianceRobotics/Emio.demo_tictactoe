@@ -10,6 +10,25 @@ logger = getLogger()
 logger.info(f"Logger has been initialized with level: {logging.getLevelName(logger.level)}")
 
 
+GAMETEXT = ("""
+  _______ _        _______           _______         
+ |__   __(_)      |__   __|         |__   __|        
+    | |   _  ___     | | __ _  ___     | | ___   ___ 
+    | |  | |/ __|    | |/ _` |/ __|    | |/ _ \ / _ \ 
+    | |  | | (__     | | (_| | (__     | | (_) |  __/
+    |_|  |_|\___|    |_|\__,_|\___|    |_|\___/ \___|
+             _ _   _       ______           _        
+            (_) | | |     |  ____|         (_)       
+   __      ___| |_| |__   | |__   _ __ ___  _  ___   
+   \ \ /\ / / | __| '_ \  |  __| | '_ ` _ \| |/ _ \  
+    \ V  V /| | |_| | | | | |____| | | | | | | (_) | 
+     \_/\_/ |_|\__|_| |_| |______|_| |_| |_|_|\___/  
+            
+               /\_/\              /^ ^\ 
+              ( o.o )            / 0 0 \ 
+               > ^ <             V\ Y /V
+        """)
+
 
 def createPhotoDirectory():
     """
@@ -125,6 +144,8 @@ def gameLoop(tictactoe: TicTacToe, dhresults: DHResults):
     Game loop of the TicTacToe game
     """
 
+    print(GAMETEXT)
+
     while startNewGameStep():
 
         # Initialize the game
@@ -139,6 +160,7 @@ def gameLoop(tictactoe: TicTacToe, dhresults: DHResults):
         tictactoe.photoID = 1
 
         firstRound(tictactoe, dhresults) # First round of the game
+        tictactoe.checkAndCorrectBoard()
 
         # Loop on the next rounds
         while not tictactoe.hasWinner():
