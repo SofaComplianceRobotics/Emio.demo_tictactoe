@@ -5,14 +5,7 @@
 **Play tic tac toe with Emio**. The pawns are cubes with a photo of a cat or a dog on top. We trained Emio to recognize the cats and dogs. 
 Choose a pawn and start playing with Emio.  
 
-**Features**:
-- Follow the instructions on the terminal
-- Choose a difficulty between: "e" easy, "r" random, "h" hard, "i" impossible
-- Emio will wait for you to start. If you don't do anything it will choose a pawn and start the game.
-- During the game, Emio will check the board at the end of each round and will try to correct it if there is any mismatch
-- At the end of the game you can let Emio put the pawns into the storage zone  
-
-# Requirements
+## Requirements
 
 To launch the demo, you need to install: 
 
@@ -22,7 +15,7 @@ To launch the demo, you need to install:
 4. [**DarkHelp**](https://github.com/stephanecharette/DarkHelp): The DarkHelp C++ API is a wrapper to make it easier to use the Darknet neural network framework within a C++ application. No binaries are provided, you need to clone the github project and compile from source. You can follow the instructions on the [GitHub repository](https://github.com/stephanecharette/DarkHelp).
 5. Clone the Emio.demo_tictactoe GitHub project `git clone git@github.com:SofaComplianceRobotics/Emio.demo_tictactoe.git`, and add a symbolic link pointing to the `Emio.demo_tictactoe` folder into  `~/emio-labs/assets/labs/demo_tictactoe`
 
-# How To
+## How To
 
 To launch the demo:
 
@@ -68,7 +61,15 @@ To launch the demo:
 3. In `DarkHelp.py` line 86 : `Predict.argtypes = [c_void_p, c_int, c_int, POINTER(c_uint8), c_int]` 
 4. `cd ~/emio-labs/assets/labs/demo_tictactoe`
 5. `python play.py` 
-6. Now follow the instructions on the terminal 
 
-<img src="data/images/instructions.png" width="80%"/>
+## Gameplay sequence
 
+1. Follow the instructions on the terminal
+2. Choose a difficulty between, "e" (easy), "r" (random), "h" (hard), and "i" (impossible)  
+   <img alt="Screenshot of the instructions on the terminal. Start the game." src="data/images/instructions.png" width=60%/>
+3. Emio will start by putting the pawns into the storage zone if the board is not clear.  
+4. Once the board is clear, Emio will wait for you to start. If you don't do anything after 10 seconds it will choose a pawn and start the game.
+5. At each round, after Emio plays, wait for the instruction to make your move.   
+   <img alt="Screenshot of the instructions on the terminal. The rounds" src="data/images/roundsInstructions.png" width=35%/>  
+6. During the game, Emio will check the board at the end of each round and will try to correct it if there is any mismatch. It will try two times, then ask you to correct the board if it didn'd succeed. 
+7. At the end of the game, Emio will ask you to play again.
