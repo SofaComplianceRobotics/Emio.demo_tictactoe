@@ -14,6 +14,16 @@
 The pawns are cubes with a photo of a cat or a dog on top. We trained Emio to recognize the cats and dogs. 
 Choose a pawn and start playing with Emio.  
 
+### Requirements
+
+To launch the demo, you need to install: 
+
+1. [**Darknet**](https://github.com/hank-ai/darknet): Darknet is an open source neural network framework written in C, C++, and CUDA. No binaries are provided, you need to clone the GitHub project and compile from source. You can follow the instructions on the [GitHub repository](https://github.com/hank-ai/darknet).
+2. [**DarkHelp**](https://github.com/stephanecharette/DarkHelp): The DarkHelp C++ API is a wrapper to make it easier to use the Darknet neural network framework. No binaries are provided, you need to clone the GitHub project and compile from source. You can follow the instructions on the [GitHub repository](https://github.com/stephanecharette/DarkHelp).
+3. In the field below, set the path to the DarkHelp python library. This is required for Emio to use the Darknet neural network framework.
+
+    #input("darkhelp_path", "Path to DarkHelp", "PATH_TO_darkhelp/src-python")
+
 ### Gameplay sequence
 
 1. Click the python button below 
@@ -27,6 +37,5 @@ Choose a pawn and start playing with Emio.
 7. During the game, Emio will check the board at the end of each round and will try to correct it if there is any mismatch. It will try two times, then ask you to correct the board if it didn'd succeed. 
 8. At the end of the game, Emio will ask you to play again.
 
-
-#python-button("assets/labs/demo_tictactoe/play.py")
+#python-button("assets/labs/demo_tictactoe/play.py", "darkhelp_path")
 ::::
