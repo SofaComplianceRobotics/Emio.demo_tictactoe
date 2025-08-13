@@ -64,7 +64,6 @@ To launch the demo:
 5. `python play.py`
 
 ### Troubleshooting:
-- The `zmq` python module is needed. If you don't have it install you can use this command `python -m pip install zmq`
 - In `PATH/TO/src/DarkHelp/src-python/Darkhelp.py`, replace line 17 with `libpath = "C:/Program Files/darkhelp/bin/darkhelp.dll"`
 
 ## Gameplay sequence
