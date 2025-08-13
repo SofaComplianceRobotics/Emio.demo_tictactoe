@@ -22,6 +22,7 @@ To launch the demo, you need to install:
 2. [**DarkHelp**](https://github.com/stephanecharette/DarkHelp): The DarkHelp C++ API is a wrapper to make it easier to use the Darknet neural network framework. No binaries are provided, you need to clone the GitHub project and compile from source. You can follow the instructions on the [GitHub repository](https://github.com/stephanecharette/DarkHelp).
 3. **In the field below**, set the path to the DarkHelp python library. This is required for Emio to use the Darknet neural network framework.
     #input("darkhelp_path", "Path to DarkHelp", "PATH_TO_darkhelp/src-python")
+4. Python packages: `python -m pip install pygame`
 
 ### Gameplay sequence
 
