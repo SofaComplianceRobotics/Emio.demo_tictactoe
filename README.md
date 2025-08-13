@@ -60,7 +60,11 @@ To launch the demo:
     ```
 3. In `DarkHelp.py` line 86 : `Predict.argtypes = [c_void_p, c_int, c_int, POINTER(c_uint8), c_int]` 
 4. `cd ~/emio-labs/assets/labs/demo_tictactoe`
-5. `python play.py` 
+5. `python play.py`
+
+### Troubleshooting:
+- The `zmq` python module is needed. If you don't have it install you can use this command `python -m pip install zmq`
+- In `PATH/TO/src/DarkHelp/src-python/Darkhelp.py`, replace line 17 with `libpath = "C:/Program Files/darkhelp/bin/darkhelp.dll"`
 
 ## Gameplay sequence
 
