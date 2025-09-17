@@ -66,7 +66,17 @@ class TicTacToe () :
         Sofa.Simulation.init(self.simulation)
         # Emio set up animation
         for i in range(200):
-            self.simulationStep()
+            self.displayStep()
+
+
+    def displayStep(self):        
+        self.dhresults.displayAnnotatedImage()
+        Sofa.Simulation.animate(self.simulation, self.simulation.dt.value)
+
+
+    def updateStep(self):        
+        self.dhresults.updateAndDisplayAnnotatedImage()
+        Sofa.Simulation.animate(self.simulation, self.simulation.dt.value)
 
 
     def displayBoard(self):
@@ -532,7 +542,7 @@ class TicTacToe () :
         # The tree next line are to be commented if you want to use the hardcoded position of the box instead of the calculated one
         cubePosition = None
         while cubePosition is None:
-            self.dhresults.updateAndDisplayAnnotatedImage()
+            self.updateStep()
             cubePosition = self.getNearestStorageCube(self.computerColor, cellPosition)
 
         logger.debug(f"Picking cube at position: [{cubePosition[0]:.2f}, {cubePosition[1]:.2f}]")
@@ -545,7 +555,7 @@ class TicTacToe () :
         moveEmio = self.simulation.MoveEmio
         moveEmio.setGripperTarget([x, y, z], speed=speed, minSteps=minSteps, withPI=withPI)
         while not moveEmio.done:
-            self.simulationStep()
+            self.displayStep()
         return 
             
 
@@ -553,7 +563,7 @@ class TicTacToe () :
         moveEmio = self.simulation.MoveEmio
         moveEmio.setGripperDistance(distance, speed=speed, minSteps=minSteps)
         while not moveEmio.done:
-            self.simulationStep()
+            self.displayStep()
         return 
 
 
@@ -563,11 +573,6 @@ class TicTacToe () :
         """
         self.sendGripperPosition(self.restPosition[0], self.restPosition[1], self.restPosition[2], minSteps=0)
         self.sendGripperOpening(self.restOpeningDistance)
-
-
-    def simulationStep(self):        
-        self.dhresults.displayAnnotatedImage()
-        Sofa.Simulation.animate(self.simulation, self.simulation.dt.value)
 
 
     def sequenceMove(self, cubePosition, cellPosition, endInRestPosition=True):
@@ -627,7 +632,7 @@ class TicTacToe () :
                         realBoard.state[x, y] = int(cls[i])
             return realBoard
 
-        self.dhresults.updateAndDisplayAnnotatedImage()
+        self.updateStep()
         cls = self.dhresults.cls
         xydwh = self.dhresults.xydwh
         realBoard = getRealBoard(cls, xydwh)
@@ -674,7 +679,7 @@ class TicTacToe () :
                             if cubePosition is not None:
                                 self.sequenceMove(cubePosition, cellPosition)
 
-            self.dhresults.updateAndDisplayAnnotatedImage()
+            self.updateStep()
             cls = self.dhresults.cls
             xydwh = self.dhresults.xydwh
             realBoard = getRealBoard(cls, xydwh)
@@ -692,7 +697,7 @@ class TicTacToe () :
         Make Emio clear the board
         """
 
-        self.dhresults.updateAndDisplayAnnotatedImage()
+        self.updateStep()
         while not self.isPlayZoneClear(): # If the playzone is not empty
             self.updateStorageState() # Update the storage state to know where to put the cube to store
             
@@ -707,7 +712,7 @@ class TicTacToe () :
                 return
             
             self.sequenceMove(cubePosition, cellPosition, endInRestPosition=False)
-            self.dhresults.updateAndDisplayAnnotatedImage()
+            self.updateStep()
             self.takePhotoForDatabase()
 
 

@@ -140,6 +140,7 @@ class MoveEmio(Sofa.Core.Controller):
 
 
     def onAnimateBeginEvent(self, _):
+        pygame.event.get()
         if not self.done:
 
             positionEffector = self.emio.CenterPart.TipEffector.EffectorCoord

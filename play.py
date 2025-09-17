@@ -121,16 +121,16 @@ def firstRound(tictactoe: TicTacToe, dhresults: DHResults):
     
     # Wait 10 seconds for the player to play, 
     # or if a hand is detected, then Emio plays
-    dhresults.updateAndDisplayAnnotatedImage()
+    tictactoe.updateStep()
     while (dhresults.isHandDetected() or (time.time()-t0 < 10 and not tictactoe.userPlayed())): 
-        dhresults.updateAndDisplayAnnotatedImage()
+        tictactoe.updateStep()
 
     tictactoe.takePhotoForDatabase()
 
     if tictactoe.humanColor is None: # If the human did not play first, Emio will take the first detected color
-        dhresults.updateAndDisplayAnnotatedImage()
+        tictactoe.updateStep()
         while not tictactoe.makeEmioChooseColor():
-            dhresults.updateAndDisplayAnnotatedImage()
+            tictactoe.updateStep()
     else:
         tictactoe.displayBoard()
 
@@ -168,9 +168,10 @@ def gameLoop(tictactoe: TicTacToe, dhresults: DHResults):
             logger.info(f"Your turn to play: ('{Classes._member_names_[tictactoe.humanColor]}')")
             
             # We wait for the human to play   
-            dhresults.updateAndDisplayAnnotatedImage()
+            
+            tictactoe.updateStep()
             while not tictactoe.userPlayed(): 
-                dhresults.updateAndDisplayAnnotatedImage()
+                tictactoe.updateStep()
             tictactoe.displayBoard()
 
             # Check results
