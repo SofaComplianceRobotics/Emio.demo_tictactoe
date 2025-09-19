@@ -6,10 +6,7 @@
 :::: collapse Play with Emio
 ## Play tic tac toe with Emio
 
-
-|![Emio with the tic tac toe board](assets/labs/demo_tictactoe/data/images/tictactoe.png){width=50%}|
-|:--------------------------------------------------------------------:|
-|**Emio with the tic tac toe board.**                               |
+#video("https://www.youtube.com/embed/U-xicrlPjTc?si=0Tu1-XIn4CmPVrRD") 
 
 The pawns are cubes with a photo of a cat or a dog on top. We trained Emio to recognize the cats and dogs. 
 Choose a pawn and start playing with Emio.  
