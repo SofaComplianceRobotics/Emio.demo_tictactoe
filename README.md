@@ -14,15 +14,20 @@ To launch the demo, you need to install:
 3. [**Darknet**](https://github.com/hank-ai/darknet): Darknet is an open source neural network framework written in C, C++, and CUDA. No binaries are provided, you need to clone the GitHub project and compile from source. You can follow the instructions on the [GitHub repository](https://github.com/hank-ai/darknet).
 4. [**DarkHelp**](https://github.com/stephanecharette/DarkHelp): The DarkHelp C++ API is a wrapper to make it easier to use the Darknet neural network framework within a C++ application. No binaries are provided, you need to clone the github project and compile from source. You can follow the instructions on the [GitHub repository](https://github.com/stephanecharette/DarkHelp).
 5. Python packages: `python -m pip install pygame PyOpenGL`
-6. Add the lab/demo to the Emio Labs application: **Emio Labs>Labs>Configure Labs>Add (from URL)**
+6. In `DarkHelp.py` line 86 : `Predict.argtypes = [c_void_p, c_int, c_int, POINTER(c_uint8), c_int]` 
 
-## How To
+## How to Launch the Demo
 
-To launch the demo:
+### From the Emio Labs Application
+
+1. Add the lab/demo to the Emio Labs application: **Emio Labs>Labs>Configure Labs>Add (from URL)**
+2. In the requirements, in the text field (step3), replace the PATH_TO_darkhelp by the actual path on your computer
+3. Finally click the python button to launch the demo
+
+### From a Terminal
 
 1. Open a terminal
-2. Set the environment path:
-    
+2. Set the environment path:    
     ```bash
     # On Ubuntu
     export SOFA_ROOT=PATH_TO_SOFA_ROBOTICS_DIR
@@ -32,7 +37,6 @@ To launch the demo:
     export PYTHONPATH=$PYTHONPATH:$SOFA_ROOT/plugins/SofaPython3/lib/python3/site-packages
     export PYTHONPATH=$PYTHONPATH:PATH_TO_DarkHelp/src-python
     ```
-    
     ```bash
     # On Windows
     # Using Powershell:
@@ -52,16 +56,14 @@ To launch the demo:
     set PYTHONPATH=$PYTHONPATH:$SOFA_ROOT\plugins\SofaPython3\lib\python3\site-packages
     set PYTHONPATH=$PYTHONPATH:PATH_TO_DarkHelp\src-python
     ```
-    
     ```bash
     # On MacOS
     export SOFA_ROOT=PATH_TO_SOFA_ROBOTICS_DIR
     export PATH=$PATH:$SOFA_ROOT\bin
     export PYTHONPATH=$PYTHONPATH:PATH_TO_DarkHelp\src-python
     ```
-3. In `DarkHelp.py` line 86 : `Predict.argtypes = [c_void_p, c_int, c_int, POINTER(c_uint8), c_int]` 
-4. `cd ~/emio-labs/assets/labs/demo_tictactoe`
-5. `python play.py`
+3. `cd ~/emio-labs/assets/labs/demo_tictactoe`
+4. `python play.py`
 
 ### Troubleshooting:
 - In `PATH/TO/src/DarkHelp/src-python/Darkhelp.py`, replace line 17 with `libpath = "C:/Program Files/darkhelp/bin/darkhelp.dll"`
