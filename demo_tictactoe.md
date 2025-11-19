@@ -20,7 +20,7 @@ To launch the demo, you need to install:
 3. **In the field below**, set the path to the DarkHelp python library. This is required for Emio to use the Darknet neural network framework.
     #input("darkhelp_path", "Path to DarkHelp", "PATH_TO_darkhelp/src-python")
 4. Python packages: `python -m pip install pygame PyOpenGL`
-5. In DarkHelp.py line 86 : Predict.argtypes = [c_void_p, c_int, c_int, POINTER(c_uint8), c_int]
+5. In DarkHelp.py line 86 : `Predict.argtypes = [c_void_p, c_int, c_int, POINTER(c_uint8), c_int]`
 
 ### Gameplay sequence
 
