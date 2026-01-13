@@ -36,6 +36,7 @@ To launch the demo, you need to install:
     export PYTHONPATH=$SOFA_ROOT/bin/python/lib/python3.10/site-packages
     export PYTHONPATH=$PYTHONPATH:$SOFA_ROOT/plugins/SofaPython3/lib/python3/site-packages
     export PYTHONPATH=$PYTHONPATH:PATH_TO_DarkHelp/src-python
+    export PYTHONPATH=$PYTHONPATH:PATH_TO_EmioLabs/assets
     ```
     ```bash
     # On Windows
@@ -46,6 +47,7 @@ To launch the demo, you need to install:
     $env.PYTHONPATH=$env.SOFA_ROOT\bin\python\Lib\site-packages
     $env.PYTHONPATH+=$env.SOFA_ROOT\plugins\SofaPython3\lib\python3\site-packages
     $env.PYTHONPATH+=PATH_TO_DarkHelp\src-python
+    $env.PYTHONPATH+=PATH_TO_EmioLabs\assets
     
     # On Windows
     # Using Command Prompt:
@@ -55,12 +57,14 @@ To launch the demo, you need to install:
     set PYTHONPATH=$SOFA_ROOT\bin\python\Lib\site-packages
     set PYTHONPATH=$PYTHONPATH:$SOFA_ROOT\plugins\SofaPython3\lib\python3\site-packages
     set PYTHONPATH=$PYTHONPATH:PATH_TO_DarkHelp\src-python
+    set PYTHONPATH=$PYTHONPATH:PATH_TO_EmioLabs\assets
     ```
     ```bash
     # On MacOS
     export SOFA_ROOT=PATH_TO_SOFA_ROBOTICS_DIR
     export PATH=$PATH:$SOFA_ROOT\bin
     export PYTHONPATH=$PYTHONPATH:PATH_TO_DarkHelp\src-python
+    export PYTHONPATH=$PYTHONPATH:PATH_TO_EmioLabs\assets
     ```
 3. `cd ~/emio-labs/assets/labs/demo_tictactoe`
 4. `python play.py`
