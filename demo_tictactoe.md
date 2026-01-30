@@ -1,41 +1,11 @@
-# Emio Tic Tac Toe
-
-<!-- Camera Calibration -->
-#include(assets/labs/modules/camera_calibration.md)
-
-:::: collapse Play with Emio
-## Play tic tac toe with Emio
+# Play tic tac toe with Emio
 
 #video("https://www.youtube.com/embed/U-xicrlPjTc?si=0Tu1-XIn4CmPVrRD") 
 
 The pawns are cubes with a photo of a cat or a dog on top. We trained Emio to recognize the cats and dogs. 
 Choose a pawn and start playing with Emio.  
 
-### Requirements
+#include(assets/labs/demo_tictactoe/sections/1_requirements.md)
+#include(assets/labs/modules/camera_calibration.md)
+#include(assets/labs/demo_tictactoe/sections/2_gameplaysequence.md)
 
-To launch the demo, you need to install: 
-
-1. [**Darknet**](https://github.com/hank-ai/darknet): Darknet is an open source neural network framework written in C, C++, and CUDA. No binaries are provided, you need to clone the GitHub project and compile from source. You can follow the instructions on the [GitHub repository](https://github.com/hank-ai/darknet).
-2. [**DarkHelp**](https://github.com/stephanecharette/DarkHelp): The DarkHelp C++ API is a wrapper to make it easier to use the Darknet neural network framework. No binaries are provided, you need to clone the GitHub project and compile from source. You can follow the instructions on the [GitHub repository](https://github.com/stephanecharette/DarkHelp).
-3. **In the field below**, set the path to the DarkHelp python library. This is required for Emio to use the Darknet neural network framework.
-    #input("darkhelp_path", "Path to DarkHelp", "PATH_TO_darkhelp/src-python")
-4. Python packages: `python -m pip install pygame PyOpenGL`
-5. In DarkHelp.py line 86 : `Predict.argtypes = [c_void_p, c_int, c_int, POINTER(c_uint8), c_int]`
-
-### Gameplay sequence
-
-|![Screenshot of the instructions on the terminal. Start the game.](assets/labs/demo_tictactoe/data/images/instructions.png){width=100%}| ![Screenshot of the instructions on the terminal. The rounds.](assets/labs/demo_tictactoe/data/images/roundsInstructions.png){width=60%}  |
-|:--------------------------------------------------------------------:|:--------------------------------------------------------------------:|
-|**Screenshot of the instructions on the terminal. Start the game.**                               |**Screenshot of the instructions on the terminal. The rounds.**|
-
-1. Click the python button below 
-2. Follow the instructions on the terminal
-3. Choose a difficulty between, "e" (easy), "r" (random), "h" (hard), and "i" (impossible)  
-4. Emio will start by putting the pawns into the storage zone if the board is not clear.  
-5. Once the board is clear, Emio will wait for you to start. If you don't do anything after 10 seconds it will choose a pawn and start the game.
-6. At each round, after Emio plays, wait for the instruction to make your move.   
-7. During the game, Emio will check the board at the end of each round and will try to correct it if there is any mismatch. It will try two times, then ask you to correct the board if it didn'd succeed. 
-8. At the end of the game, Emio will ask you to play again.
-
-#python-button("assets/labs/demo_tictactoe/play.py", "darkhelp_path")
-::::

@@ -9,7 +9,7 @@ def createScene(rootnode,
                 camera
                 ):
     
-    from module.moveemio import MoveEmio
+    from modules.moveemio import MoveEmio
 
     settings, modelling, simulation = addHeader(rootnode, inverse=True)
     addSolvers(simulation, rayleighStiffness=0.1)

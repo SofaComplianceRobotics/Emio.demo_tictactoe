@@ -11,7 +11,7 @@ from emioapi import EmioCamera
 from enum import Enum
 import DarkHelp
 
-from module.loggerconfig import getLogger
+from modules.loggerconfig import getLogger
 logger = getLogger()
 
 

@@ -7,11 +7,11 @@ import cv2 as cv
 import Sofa
 
 from enum import Enum
-from module.board import Board, CellState, Results
-from module.emio import createScene as createEmioScene
+from modules.board import Board, CellState, Results
+from modules.emio import createScene as createEmioScene
 
-from module.dhresults import DHResults, Classes
-from module.loggerconfig import getLogger
+from modules.dhresults import DHResults, Classes
+from modules.loggerconfig import getLogger
 logger = getLogger()
 
 

@@ -3,9 +3,9 @@ import time
 
 import DarkHelp
 
-from module.tictactoe import TicTacToe, Strategies
-from module.dhresults import DHResults, Classes
-from module.loggerconfig import getLogger, logging
+from modules.tictactoe import TicTacToe, Strategies
+from modules.dhresults import DHResults, Classes
+from modules.loggerconfig import getLogger, logging
 logger = getLogger()
 logger.info(f"Logger has been initialized with level: {logging.getLevelName(logger.level)}")
 

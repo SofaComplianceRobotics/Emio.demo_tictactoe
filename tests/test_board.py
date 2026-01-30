@@ -1,5 +1,5 @@
 
-from module.board import Board, PlayZone, StorageZone, Results
+from modules.board import Board, PlayZone, StorageZone, Results
 import pytest
 
 def test_board_initialization():

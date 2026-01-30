@@ -12,7 +12,7 @@ from OpenGL.GLU import *
 import numpy as np
 import pygame
 
-from module.picontroller import PIController
+from modules.picontroller import PIController
 from emioapi import EmioMotors
 from enum import Enum
 
