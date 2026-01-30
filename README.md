@@ -7,27 +7,28 @@ Choose a pawn and start playing with Emio.
 
 ## Requirements
 
-To launch the demo, you need to install: 
+To run the demo, you need to install: 
 
 1. [**Emio Labs**](https://www.notion.so/1e3582ce7d3a80a688b0cba2515e3e77?pvs=21) (binaries)
 2. Before going further, for computation time performance of the training you can install [**CUDA**](https://developer.nvidia.com/cuda-downloads?target_os=Linux) and [**cuDNN**](https://developer.nvidia.com/cudnn-downloads) to make the AI run on the GPU (work only if there is a GPU). This is highly recommended (and [must be done first](https://github.com/hank-ai/darknet/blob/master/README_GPU_NVIDIA_CUDA.md)) but not required. For the inference of the model you don't need GPU.
 3. [**Darknet**](https://github.com/hank-ai/darknet): Darknet is an open source neural network framework written in C, C++, and CUDA. No binaries are provided, you need to clone the GitHub project and compile from source. You can follow the instructions on the [GitHub repository](https://github.com/hank-ai/darknet).
 4. [**DarkHelp**](https://github.com/stephanecharette/DarkHelp): The DarkHelp C++ API is a wrapper to make it easier to use the Darknet neural network framework within a C++ application. No binaries are provided, you need to clone the github project and compile from source. You can follow the instructions on the [GitHub repository](https://github.com/stephanecharette/DarkHelp).
-5. Python packages: `python -m pip install pygame PyOpenGL`
-6. In `DarkHelp.py` line 86 : `Predict.argtypes = [c_void_p, c_int, c_int, POINTER(c_uint8), c_int]` 
+5. In `DarkHelp.py` line 86 : `Predict.argtypes = [c_void_p, c_int, c_int, POINTER(c_uint8), c_int]` 
 
 ## How to Launch the Demo
 
 ### From the Emio Labs Application
 
 1. Add the lab/demo to the Emio Labs application: **Emio Labs>Labs>Configure Labs>Add (from URL)**
-2. In the requirements, in the text field (step3), replace the PATH_TO_darkhelp by the actual path on your computer
+2. Follow the requirements section
+2. In the **Gameplay Sequence** section, replace the PATH_TO_darkhelp by the actual path on your computer
 3. Finally click the python button to launch the demo
 
 ### From a Terminal
 
-1. Open a terminal
-2. Set the environment path:    
+1. Open a terminal and find the Python distributed with Emio Labs (path_to_emio_labs/resources/sofa/bin/python)
+2. With this Python, install the following packages: `python -m pip install pygame PyOpenGL`
+3. In the terminal, set the following environment paths:    
     ```bash
     # On Ubuntu
     export SOFA_ROOT=PATH_TO_SOFA_ROBOTICS_DIR
