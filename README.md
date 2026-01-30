@@ -20,13 +20,13 @@ To run the demo, you need to install:
 ### From the Emio Labs Application
 
 1. Add the lab/demo to the Emio Labs application: **Emio Labs>Labs>Configure Labs>Add (from URL)**
-2. Follow the requirements section
-2. In the **Gameplay Sequence** section, replace the PATH_TO_darkhelp by the actual path on your computer
+2. Follow the **Requirements** section
+2. In the **Gameplay Sequence** section, replace the `PATH_TO_darkhelp` by the actual path on your computer
 3. Finally click the python button to launch the demo
 
 ### From a Terminal
 
-1. Open a terminal and find the Python distributed with Emio Labs (path_to_emio_labs/resources/sofa/bin/python)
+1. Open a terminal and find the Python distributed with Emio Labs (`path_to_emio_labs_install/resources/sofa/bin/python`)
 2. With this Python, install the following packages: `python -m pip install pygame PyOpenGL`
 3. In the terminal, set the following environment paths:    
     ```bash
