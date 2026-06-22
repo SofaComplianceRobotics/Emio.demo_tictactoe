@@ -1,7 +1,7 @@
-from parts.gripper import Gripper
-from parts.controllers.assemblycontroller import AssemblyController
-from parts.emio import Emio
-from utils.header import addHeader, addSolvers
+from emio.parts.gripper import Gripper
+from emio.parts.controllers.assemblycontroller import AssemblyController
+from emio import Emio
+from emio.utils.header import addHeader, addSolvers
 
 
 # The simulation of Emio which solves the IK problem
@@ -10,6 +10,7 @@ def createScene(rootnode,
                 ):
     
     from modules.moveemio import MoveEmio
+    import Sofa
 
     settings, modelling, simulation = addHeader(rootnode, inverse=True)
     addSolvers(simulation, rayleighStiffness=0.1)
@@ -37,6 +38,7 @@ def createScene(rootnode,
                 platformLevel=2,
                 extended=True)
     if not emio.isValid():
+        Sofa.msg_error(simulation, "Emio is not valid, could not add it to the scene graph.")
         return
 
     simulation.addChild(emio)

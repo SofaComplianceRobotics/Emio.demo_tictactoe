@@ -25,5 +25,5 @@
 7. During the game, Emio will check the board at the end of each round and will try to correct it if there is any mismatch. It will try two times, then ask you to correct the board if it didn't succeed. 
 8. At the end of the game, Emio will ask you to play again.
 
-#python-button("assets/labs/demo_tictactoe/play.py", "darkhelp_path")
+#python-button(pyargs=["assets/labs/demo_tictactoe/play.py"], extrapythonpath="darkhelp_path")
 ::::
