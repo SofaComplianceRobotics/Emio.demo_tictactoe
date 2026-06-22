@@ -21,54 +21,16 @@ To run the demo, you need to install:
 
 1. Add the lab/demo to the Emio Labs application: **Emio Labs>Labs>Configure Labs>Add (from URL)**
 2. Follow the **Requirements** section
-2. In the **Gameplay Sequence** section, replace the `PATH_TO_darkhelp` by the actual path on your computer
-3. Finally click the python button to launch the demo
+3. In the **Gameplay Sequence** section, replace the `PATH_TO_darkhelp` by the actual path on your computer
+4. Finally click the python button to launch the demo
 
 ### From a Terminal
 
 1. Open a terminal and find the Python distributed with Emio Labs (`path_to_emio_labs_install/resources/sofa/bin/python`)
-2. With this Python, install the following packages: `python -m pip install pygame PyOpenGL`
-3. In the terminal, set the following environment paths:    
-    ```bash
-    # On Ubuntu
-    export SOFA_ROOT=PATH_TO_SOFA_ROBOTICS_DIR
-    export PATH=$PATH:$SOFA_ROOT/bin
-    export PYTHONHOME=$SOFA_ROOT/bin/python
-    export PYTHONPATH=$SOFA_ROOT/bin/python/lib/python3.10/site-packages
-    export PYTHONPATH=$PYTHONPATH:$SOFA_ROOT/plugins/SofaPython3/lib/python3/site-packages
-    export PYTHONPATH=$PYTHONPATH:PATH_TO_DarkHelp/src-python
-    export PYTHONPATH=$PYTHONPATH:PATH_TO_EmioLabs/assets
-    ```
-    ```bash
-    # On Windows
-    # Using Powershell:
-    $env.SOFA_ROOT=PATH_TO_SOFA_ROBOTICS_DIR
-    $env.PATH+=$env.SOFA_ROOT\bin
-    $env.PYTHONHOME=$env.SOFA_ROOT\bin\python
-    $env.PYTHONPATH=$env.SOFA_ROOT\bin\python\Lib\site-packages
-    $env.PYTHONPATH+=$env.SOFA_ROOT\plugins\SofaPython3\lib\python3\site-packages
-    $env.PYTHONPATH+=PATH_TO_DarkHelp\src-python
-    $env.PYTHONPATH+=PATH_TO_EmioLabs\assets
-    
-    # On Windows
-    # Using Command Prompt:
-    set SOFA_ROOT=PATH_TO_SOFA_ROBOTICS_DIR
-    set PATH=$PATH:$SOFA_ROOT\bin
-    set PYTHONHOME=$SOFA_ROOT\bin\python
-    set PYTHONPATH=$SOFA_ROOT\bin\python\Lib\site-packages
-    set PYTHONPATH=$PYTHONPATH:$SOFA_ROOT\plugins\SofaPython3\lib\python3\site-packages
-    set PYTHONPATH=$PYTHONPATH:PATH_TO_DarkHelp\src-python
-    set PYTHONPATH=$PYTHONPATH:PATH_TO_EmioLabs\assets
-    ```
-    ```bash
-    # On MacOS
-    export SOFA_ROOT=PATH_TO_SOFA_ROBOTICS_DIR
-    export PATH=$PATH:$SOFA_ROOT\bin
-    export PYTHONPATH=$PYTHONPATH:PATH_TO_DarkHelp\src-python
-    export PYTHONPATH=$PYTHONPATH:PATH_TO_EmioLabs\assets
-    ```
-3. `cd ~/emio-labs/assets/labs/demo_tictactoe`
-4. `python play.py`
+2. With this Python, install the required packages: `python -m pip install -r requirements.txt`
+3. Follow these [instructions](https://docs-support.compliance-robotics.com/docs/next/Developers/sofa-robotics-without-emio-labs/) to setup your environment variables
+4. `cd ~/emio-labs/assets/labs/demo_tictactoe`
+5. `python play.py`
 
 ### Troubleshooting:
 - In `PATH/TO/src/DarkHelp/src-python/Darkhelp.py`, replace line 17 with `libpath = "C:/Program Files/darkhelp/bin/darkhelp.dll"`
